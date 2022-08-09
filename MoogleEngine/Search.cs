@@ -13,6 +13,8 @@ System.Console.WriteLine("ready" + (double)cronos.ElapsedMilliseconds/1000);
 Search("Harry Potter", Data);
 */
 
+namespace MoogleEngine;
+
 class Search // Cambiar los modificardores de acceso
 {
     public string query;
@@ -76,7 +78,28 @@ class Search // Cambiar los modificardores de acceso
         sortResult(DOCUMENTS_AMOUNT);
 
         resizeResult();
-      
+/*
+        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
+            System.Console.Write(i + " ");
+            for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i].Count; j++){
+                System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i][j] + " ");
+            }
+            System.Console.WriteLine();
+        }
+
+        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
+            System.Console.Write(i + " ");
+            for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i].Count; j++){
+                System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i][j] + " ");
+            }
+            System.Console.WriteLine();
+        }
+*/
+        (int, int)[] a = minDistance(Data.wordsIndex[normalizedQuery[0]], Data.wordsIndex[normalizedQuery[1]], Data.wordPositionInText, DOCUMENTS_AMOUNT);
+ /*       for(int i = 0; i < a.Length; i++){
+            System.Console.WriteLine(a[i].Item1 + " " + a[i].Item2);
+        }
+   */     
         for(int i = 0; i < this.result.Length; i++){
             System.Console.Write(this.result[i]);
         }
@@ -151,10 +174,10 @@ class Search // Cambiar los modificardores de acceso
             }
         }
 
-        for(int i = 0; i < querySize; i++){
+/*        for(int i = 0; i < querySize; i++){
             System.Console.WriteLine(operators[i]);
         }
-        return operators;
+  */      return operators;
     }
 /*
     static (bool[], bool[]) ApplyOperators((double, int)[] result, int[] operatorsPosition){
@@ -219,4 +242,42 @@ class Search // Cambiar los modificardores de acceso
         }
         return words;
     }*/
+
+    //Modulo para determinar en cual documento las palabras estan mas cercanas
+    public static (int, int)[] minDistance(int word1, int word2, List<List<int>[]> wordPositionInText, int DOCUMENTS_AMOUNT)
+    {
+        (int, int)[] minDistanceAndFrequency = new (int,int)[DOCUMENTS_AMOUNT];
+        int minDistance = int.MaxValue;
+        int frecuency = 0;
+        int _distance;
+
+        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
+           // System.Console.WriteLine(wordPositionInText[word2][i].Count);
+            for(int j = 0; j < wordPositionInText[word1][i].Count; j++)
+            {
+                int k = 0;
+                while(k < wordPositionInText[word2][i].Count)
+                {
+                    _distance = wordPositionInText[word2][i][k] - wordPositionInText[word1][i][j];
+                      //  System.Console.WriteLine(_distance);
+                    if(_distance > 0){
+                        if(_distance < minDistance){
+                            minDistance = _distance;
+                            frecuency = 1;
+                        }
+                        else if(_distance == minDistance){
+                            frecuency++;
+                        }
+                        break;
+                    }
+                    k++;
+                }
+            }
+            minDistanceAndFrequency[i] = (minDistance, frecuency);
+            minDistance = int.MaxValue;
+            frecuency = 0;
+        }
+
+        return minDistanceAndFrequency;
+    }
 }

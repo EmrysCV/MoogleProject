@@ -2,9 +2,11 @@
     En esta clase estan agrupados los metodos implementados para las distintas funcionalidades 
     requeridas para la implementacion del proyecto no el modelo de 
 */
+
+namespace MoogleEngine;
+
 class Tools
 {
-    
     public static int EditDistance(string wordA, string wordB)
     {
 
