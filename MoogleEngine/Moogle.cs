@@ -34,8 +34,18 @@ public static class Moogle
             items = new SearchItem[resultSize];
             for(int i = 0; i < resultSize; i++)
             {
-                string[] _auxResult = content.Item2[result.result[i].Item2].Split(spliters);
-                items[i] = new SearchItem(_auxResult[_auxResult.Length-1], "Lorem Ipsum", (float)(result.result[i].Item1));
+                int _documentIndex = result.result[i].Item2;
+
+                string[] _auxResult = content.Item2[_documentIndex].Split(spliters);
+                //int a = content.Item1[_documentIndex].IndexOf("Harry"); Data.wordPositionInText[Data.wordsIndex[Tools.Normalize(query)[0]]][result.result[i].Item2][0];
+               
+                //Modifcar la chapuseria esta
+                if(content.Item1[_documentIndex].Length >= 400){
+                    items[i] = new SearchItem(_auxResult[_auxResult.Length-1], content.Item1[_documentIndex].Substring(0, 400), (float)(result.result[i].Item1));
+                }
+                else{
+                    items[i] = new SearchItem(_auxResult[_auxResult.Length-1], content.Item1[_documentIndex].Substring(0, content.Item1[_documentIndex].Length), (float)(result.result[i].Item1));
+                }
             }
         }
 

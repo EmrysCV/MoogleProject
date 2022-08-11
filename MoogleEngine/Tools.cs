@@ -73,11 +73,12 @@ class Tools
                     continue;
                 }
 
-                if(isQuery){
-                    if(_ac == '!') {newWord += _ac.ToString(); continue;}
-                    if(_ac == '^') {newWord += _ac.ToString(); continue;}
-                    if(_ac == '~') {newWord += _ac.ToString(); continue;}
-                    if(_ac == '*') {newWord += _ac.ToString(); continue;}
+                if (isQuery)
+                {
+                    if (_ac == '!') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '^') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '~') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '*') { newWord += _ac.ToString(); continue; }
                 }
             }
 
@@ -102,6 +103,79 @@ class Tools
             }
         }
         return result;
+    }
+
+        //Modulo para determinar en cual documento las palabras estan mas cercanas
+    public static (int, int, int)[] minDistance(int word1, int word2, List<List<int>[]> wordPositionInText, int DOCUMENTS_AMOUNT)
+    {
+        (int, int, int)[] minDistanceAndFrequency = new (int, int, int)[DOCUMENTS_AMOUNT];
+        int minDistance = int.MaxValue;
+        int frecuency = 0;
+        int _distance;
+
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
+        {
+            // System.Console.WriteLine(wordPositionInText[word2][i].Count);
+            for (int j = 0; j < wordPositionInText[word1][i].Count; j++)
+            {
+                int k = 0;
+                while (k < wordPositionInText[word2][i].Count)
+                {
+                    _distance = wordPositionInText[word2][i][k] - wordPositionInText[word1][i][j];
+                    //  System.Console.WriteLine(_distance);
+                    if (_distance > 0)
+                    {
+                        if (_distance < minDistance)
+                        {
+                            minDistance = _distance;
+                            frecuency = 1;
+                        }
+                        else if (_distance == minDistance)
+                        {
+                            frecuency++;
+                        }
+                        break;
+                    }
+                    k++;
+                }
+            }
+            minDistanceAndFrequency[i] = (minDistance, frecuency, i);
+            minDistance = int.MaxValue;
+            frecuency = 0;
+        }
+
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
+        {
+            for (int j = i + 1; j < DOCUMENTS_AMOUNT; j++)
+            {
+                if ((minDistanceAndFrequency[i].Item1 > minDistanceAndFrequency[j].Item1) || (minDistanceAndFrequency[i].Item1 == minDistanceAndFrequency[j].Item1 && minDistanceAndFrequency[i].Item2 < minDistanceAndFrequency[j].Item2))
+                {
+                    (int, int, int) _aux = minDistanceAndFrequency[i];
+                    minDistanceAndFrequency[i] = minDistanceAndFrequency[j];
+                    minDistanceAndFrequency[j] = _aux;
+                }
+            }
+        }
+
+        int newSize = 0;
+
+        for (int i = 0; i < minDistanceAndFrequency.Length; i++)
+        {
+            if (minDistanceAndFrequency[i].Item2 == 0)
+            {
+                newSize = i;
+                break;
+            }
+        }
+
+        (int, int, int)[] _auxResult = new (int, int, int)[newSize];
+
+        for (int i = 0; i < newSize; i++)
+        {
+            _auxResult[i] = minDistanceAndFrequency[i];
+        }
+
+        return _auxResult;
     }
 
     public static (List<string>, string[]) LoadDocuments()

@@ -20,7 +20,7 @@ class Search // Cambiar los modificardores de acceso
     public string query;
     public string suggestion;
     public int QUERY_WORDS_AMOUNT;
-    public (double , int)[] result;
+    public (double, int)[] result;
 
     public Search(string query, TextProcess Data)
     {/*
@@ -31,18 +31,17 @@ class Search // Cambiar los modificardores de acceso
 
         //int DOCUMENTS_AMOUNT = Data.tfIdf[0].Count;
         int DOCUMENTS_AMOUNT = Data.DOCUMENTS_AMOUNT;
-        this.QUERY_WORDS_AMOUNT = normalizedQuery.Count;
         suggestion = "";
         string closestWord;
         int _wordIndex;
-        bool[] shouldContain;
-        bool[] shouldNotContain;
 
         this.result = new (double, int)[DOCUMENTS_AMOUNT];
 
-        int[] operatorsPosition = FindOperators(normalizedQuery, Data);
+        string[] operators = FindOperators(normalizedQuery);
 
         normalizedQuery = Tools.Normalize(query);
+
+        this.QUERY_WORDS_AMOUNT = normalizedQuery.Count;
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
@@ -54,18 +53,16 @@ class Search // Cambiar los modificardores de acceso
             if (Data.wordsIndex.ContainsKey(normalizedQuery[i]))
             {
                 _wordIndex = Data.wordsIndex[normalizedQuery[i]];
-                if(operatorsPosition[i] == 0){
-
-                }
-                else{
-                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+                for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+                {
+                    this.result[j].Item1 += Data.tfIdf[_wordIndex, j];
+                    if (operators[i].Contains("*"))
                     {
-                        this.result[j].Item1 += Data.tfIdf[_wordIndex,j];
-                        /*if(operatorsPosition[i] > 1 && Data.tfIdf[_wordIndex][j] != 0) {
-                        result[j].Item1 *= operatorsPosition[i];
-                        }*/
+                        int _amount = operators[i].LastIndexOf("*") - operators[i].IndexOf("*") + 1;
+                        this.result[j].Item1 *= Math.Pow(2.0, _amount);
                     }
                 }
+
                 suggestion += normalizedQuery[i] + " ";
             }
             else
@@ -75,38 +72,124 @@ class Search // Cambiar los modificardores de acceso
             }
         }
 
+        for (int i = 0; i < QUERY_WORDS_AMOUNT; i++)
+        {
+            if (Data.wordsIndex.ContainsKey(normalizedQuery[i]))
+            {
+                _wordIndex = Data.wordsIndex[normalizedQuery[i]];
+                for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+                {
+                    if ((operators[i] == "!" && Data.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Data.tf[_wordIndex][j] == 0))
+                    {
+                        this.result[j].Item1 *= 0;
+                    }
+                }
+                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~"))
+                {
+                    (int, int, int)[] a = Tools.minDistance(Data.wordsIndex[normalizedQuery[i]], Data.wordsIndex[normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT);
+                    for (int j = 0; j < a.Length; j++)
+                    {
+                        this.result[a[j].Item3].Item1 += a[j].Item2 / a[j].Item1;
+                    }
+                }
+            }
+        }
+
         sortResult(DOCUMENTS_AMOUNT);
-
         resizeResult();
-/*
-        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
-            System.Console.Write(i + " ");
-            for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i].Count; j++){
-                System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i][j] + " ");
-            }
-            System.Console.WriteLine();
-        }
+        /*
+                for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
+                    System.Console.Write(i + " ");
+                    for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i].Count; j++){
+                        System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[0]]][i][j] + " ");
+                    }
+                    System.Console.WriteLine();
+                }
 
-        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
-            System.Console.Write(i + " ");
-            for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i].Count; j++){
-                System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i][j] + " ");
-            }
-            System.Console.WriteLine();
-        }
-*/
-        (int, int)[] a = minDistance(Data.wordsIndex[normalizedQuery[0]], Data.wordsIndex[normalizedQuery[1]], Data.wordPositionInText, DOCUMENTS_AMOUNT);
- /*       for(int i = 0; i < a.Length; i++){
-            System.Console.WriteLine(a[i].Item1 + " " + a[i].Item2);
-        }
-   */     
-        for(int i = 0; i < this.result.Length; i++){
+                for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
+                    System.Console.Write(i + " ");
+                    for(int j = 0; j < Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i].Count; j++){
+                        System.Console.Write(Data.wordPositionInText[Data.wordsIndex[normalizedQuery[1]]][i][j] + " ");
+                    }
+                    System.Console.WriteLine();
+                }
+        */
+        // (int, int)[] a = minDistance(Data.wordsIndex[normalizedQuery[0]], Data.wordsIndex[normalizedQuery[1]], Data.wordPositionInText, DOCUMENTS_AMOUNT);
+        /*       for(int i = 0; i < a.Length; i++){
+                   System.Console.WriteLine(a[i].Item1 + " " + a[i].Item2);
+               }
+          */
+        for (int i = 0; i < this.result.Length; i++)
+        {
             System.Console.Write(this.result[i]);
         }
         System.Console.WriteLine();
     }
 
-    void sortResult(int DOCUMENTS_AMOUNT){
+    static string[] FindOperators(List<string> normalizedQuery)
+    {
+        int querySize = normalizedQuery.Count;
+        string[] operators = new string[querySize];
+        int k = 0;
+
+        for (int i = 0; i < querySize; i++)
+        {
+            operators[i] = "";
+        }
+
+        for (int i = 0; i < querySize; i++)
+        {
+            for (int j = 0; j < normalizedQuery[i].Length; j++)
+            {
+                //System.Console.WriteLine(k+ " " + operators.Length);
+                if (normalizedQuery[i].Length > 1)
+                {
+                    if (normalizedQuery[i][j] == '!')
+                    {
+                        operators[k] = "!";
+                        continue;
+                    }
+                    if (normalizedQuery[i][j] == '*' && !operators[i].Contains('!'))
+                    {
+                        operators[k] += "*";
+                        continue;
+                    }
+                    if (normalizedQuery[i][j] == '^' && !operators[i].Contains('!'))
+                    {
+                        operators[k] = "^" + operators[k];
+                        continue;
+                    }
+                }
+                else if (normalizedQuery[i][j] == '~')
+                {
+                    k--;
+                    if (operators[k] != "!")
+                    {
+                        operators[k] = "~";
+                        operators[k + 1] = "~";
+                    }
+                }
+                else if (normalizedQuery[i][j] == '!' || normalizedQuery[i][j] == '^' || normalizedQuery[i][j] == '*')
+                {
+                    k--;
+                }
+            }
+            k++;
+        }
+        string[] _operators = new string[k];
+        for (int i = 0; i < k; i++)
+        {
+            _operators[i] = operators[i];
+            System.Console.WriteLine(i + " " + operators[i]);
+        }
+
+        return _operators;
+
+        //!**el **perro ! e^s e~l ^!papa ~ !de lo!s ^**cachorros
+    }
+    
+    void sortResult(int DOCUMENTS_AMOUNT)
+    {
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
@@ -122,72 +205,38 @@ class Search // Cambiar los modificardores de acceso
         }
     }
 
-    void resizeResult(){ //Optimizable con sortResult
-        
+    void resizeResult()
+    { //Optimizable con sortResult
+
         int newSize = 0;
-        
-        for(int i = 0; i < this.result.Length; i++){
-            if(this.result[i].Item1 == 0){
+
+        for (int i = 0; i < this.result.Length; i++)
+        {
+            if (this.result[i].Item1 == 0)
+            {
                 newSize = i;
                 break;
             }
         }
-        
+
         (double, int)[] _auxResult = new (double, int)[newSize];
 
-        for(int i = 0; i < newSize; i++){
+        for (int i = 0; i < newSize; i++)
+        {
             _auxResult[i] = this.result[i];
         }
 
-        this.result =  _auxResult;
+        this.result = _auxResult;
     }
-
-    static int[] FindOperators(List<string> normalizedQuery ,TextProcess Data){
-        
-        int querySize = normalizedQuery.Count;
-        int[] operators = new int[querySize];
-        bool[] souldContain = new bool[querySize];
-        bool[] sholdNotContain = new bool[querySize];
-
-        for(int i = 0; i < querySize; i++){
-            operators[i] = 1;
-        }
-
-        for(int i = 0; i < querySize; i++){
-            for(int j = 0; j < normalizedQuery[i].Length; j++){
-                if(normalizedQuery[i][j] == '!'){
-                    
-                    continue;
-                }
-                if(normalizedQuery[i][j] == '*'){
-                    operators[i] *= 2;
-                    continue;
-                }
-                if(normalizedQuery[i][j] == '^'){
-                    if(operators[i] == 0) operators[i] = -1;
-                    else operators[i] *= -1;
-                    continue;
-                }
-                if(normalizedQuery[i][j] == '~'){
+    /*
+        static (bool[], bool[]) ApplyOperators((double, int)[] result, int[] operatorsPosition){
+            for(int i = 0; i < operatorsPosition.Length; i++){
+                if(operatorsPosition[i] == '0'){
 
                 }
             }
-        }
+        }*/
 
-/*        for(int i = 0; i < querySize; i++){
-            System.Console.WriteLine(operators[i]);
-        }
-  */      return operators;
-    }
-/*
-    static (bool[], bool[]) ApplyOperators((double, int)[] result, int[] operatorsPosition){
-        for(int i = 0; i < operatorsPosition.Length; i++){
-            if(operatorsPosition[i] == '0'){
-
-            }
-        }
-    }*/
-    
     /*
     foreach(KeyValuePair<string, int> a in Data.wordsIndex)
     {
@@ -242,42 +291,4 @@ class Search // Cambiar los modificardores de acceso
         }
         return words;
     }*/
-
-    //Modulo para determinar en cual documento las palabras estan mas cercanas
-    public static (int, int)[] minDistance(int word1, int word2, List<List<int>[]> wordPositionInText, int DOCUMENTS_AMOUNT)
-    {
-        (int, int)[] minDistanceAndFrequency = new (int,int)[DOCUMENTS_AMOUNT];
-        int minDistance = int.MaxValue;
-        int frecuency = 0;
-        int _distance;
-
-        for(int i = 0; i < DOCUMENTS_AMOUNT; i++){
-           // System.Console.WriteLine(wordPositionInText[word2][i].Count);
-            for(int j = 0; j < wordPositionInText[word1][i].Count; j++)
-            {
-                int k = 0;
-                while(k < wordPositionInText[word2][i].Count)
-                {
-                    _distance = wordPositionInText[word2][i][k] - wordPositionInText[word1][i][j];
-                      //  System.Console.WriteLine(_distance);
-                    if(_distance > 0){
-                        if(_distance < minDistance){
-                            minDistance = _distance;
-                            frecuency = 1;
-                        }
-                        else if(_distance == minDistance){
-                            frecuency++;
-                        }
-                        break;
-                    }
-                    k++;
-                }
-            }
-            minDistanceAndFrequency[i] = (minDistance, frecuency);
-            minDistance = int.MaxValue;
-            frecuency = 0;
-        }
-
-        return minDistanceAndFrequency;
-    }
 }
