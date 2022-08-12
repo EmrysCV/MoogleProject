@@ -5,7 +5,7 @@
 
 namespace MoogleEngine;
 
-class Tools
+public static class Tools
 {
     public static int EditDistance(string wordA, string wordB)
     {
@@ -44,9 +44,6 @@ class Tools
 
     public static List<string> Normalize(string text, bool isQuery = false)
     {
-        //áéíóúü
-        //System.Console.WriteLine("Normlizar: " + text);
-
         char[] spliters = { ' ', '\n', '\t', ',', '.', ':', ';' };
         string[] words = text.Split(spliters);
         string newWord;
@@ -65,7 +62,7 @@ class Tools
                 if (_ac == 'ó') { newWord += "o"; continue; }
                 if (_ac == 'ú') { newWord += "u"; continue; }
                 if (_ac == 'ü') { newWord += "u"; continue; }
-                //if(c == 'ñ'){ newWord += "ñ"; continue;}
+                //if(_ac == 'ñ'){ newWord += "ñ"; continue;}
 
                 if (char.IsLetterOrDigit(_ac))
                 {
@@ -115,14 +112,13 @@ class Tools
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
-            // System.Console.WriteLine(wordPositionInText[word2][i].Count);
             for (int j = 0; j < wordPositionInText[word1][i].Count; j++)
             {
                 int k = 0;
                 while (k < wordPositionInText[word2][i].Count)
                 {
                     _distance = wordPositionInText[word2][i][k] - wordPositionInText[word1][i][j];
-                    //  System.Console.WriteLine(_distance);
+
                     if (_distance > 0)
                     {
                         if (_distance < minDistance)
@@ -199,4 +195,3 @@ class Tools
         return (fileContent, directory);
     }
 }
-

@@ -6,15 +6,13 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    public static SearchResult Query(string query) {
-       // Modifique este método para responder a la búsqueda
-        
-        
+    public static SearchResult Query(string query, TextProcess Data, (List<string>, string[]) content){
+       
         Stopwatch cronos = new Stopwatch();
         cronos.Start();
-        (List<string>, string[]) content = Tools.LoadDocuments();
+        /*(List<string>, string[]) content = Tools.LoadDocuments();
         TextProcess Data = new TextProcess(content.Item1);        
-        
+        */
         char[] spliters = {'\\' , '/' , '-'}; 
 
         Search result = new Search(query, Data);
@@ -37,9 +35,7 @@ public static class Moogle
                 int _documentIndex = result.result[i].Item2;
 
                 string[] _auxResult = content.Item2[_documentIndex].Split(spliters);
-                //int a = content.Item1[_documentIndex].IndexOf("Harry"); Data.wordPositionInText[Data.wordsIndex[Tools.Normalize(query)[0]]][result.result[i].Item2][0];
-               
-                //Modifcar la chapuseria esta
+                
                 if(content.Item1[_documentIndex].Length >= 400){
                     items[i] = new SearchItem(_auxResult[_auxResult.Length-1], content.Item1[_documentIndex].Substring(0, 400), (float)(result.result[i].Item1));
                 }
@@ -52,7 +48,7 @@ public static class Moogle
         cronos.Stop();
         System.Console.WriteLine((double)cronos.ElapsedMilliseconds/1000);
         System.Console.WriteLine(Data.tf.Count);
+        
         return new SearchResult(items, result.suggestion);
-
     }
 }
