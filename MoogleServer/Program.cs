@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MoogleEngine;
+using System.Diagnostics;
 
 public class Program
 {
@@ -9,10 +10,15 @@ public class Program
 
     public static void Main(string[] args)
     {
+        Stopwatch crono = new Stopwatch();
 
+        crono.Start();
         content = Tools.LoadDocuments();
         Data = new TextProcess(content.Item1);
-        
+
+        crono.Stop();
+        System.Console.WriteLine((double)crono.ElapsedMilliseconds / 1000);
+
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container
