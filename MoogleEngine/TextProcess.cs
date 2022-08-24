@@ -38,9 +38,7 @@ public class TextProcess
         this.wordsIndex.Add(word, wordIndex);
         this.tf.Add(new int[this.DOCUMENTS_AMOUNT]);
         this.tf[wordIndex][documentIndex] = 1;
-
         this.wordPositionInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
-        this.wordPositionInText[wordIndex][documentIndex] = new List<int>();
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {

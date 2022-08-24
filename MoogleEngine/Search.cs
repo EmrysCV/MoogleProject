@@ -1,34 +1,27 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-
-namespace MoogleEngine;
+﻿namespace MoogleEngine;
 
 class Search // Cambiar los modificardores de acceso
 {
-    public string query;
     public string suggestion;
     public int QUERY_WORDS_AMOUNT;
     public (double, int)[] result;
 
     public Search(string query, TextProcess Data)
     {
-        this.query = query;
+        List<int[]> distancesList = new List<int[]>();
         List<string> normalizedQuery = Tools.Normalize(query, true);
-
-        int DOCUMENTS_AMOUNT = Data.DOCUMENTS_AMOUNT;
-        suggestion = "";
-        string closestWord;
-        int _wordIndex;
-
-        this.result = new (double, int)[DOCUMENTS_AMOUNT];
-
         string[] operators = FindOperators(normalizedQuery);
-
         normalizedQuery = Tools.Normalize(query);
 
+        int DOCUMENTS_AMOUNT = Data.DOCUMENTS_AMOUNT;
+        int _wordIndex;
+        double maxScore = (double)int.MinValue;
+        string closestWord;
+
+        this.suggestion = "";
         this.QUERY_WORDS_AMOUNT = normalizedQuery.Count;
+        this.result = new (double, int)[DOCUMENTS_AMOUNT];
+
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
@@ -45,8 +38,8 @@ class Search // Cambiar los modificardores de acceso
                     this.result[j].Item1 += Data.tfIdf[_wordIndex, j];
                     if (operators[i].Contains("*"))
                     {
-                        int _amount = operators[i].LastIndexOf("*") - operators[i].IndexOf("*") + 1;
-                        this.result[j].Item1 *= Math.Pow(2.0, _amount);
+                        int _power = operators[i].LastIndexOf("*") - operators[i].IndexOf("*") + 1;
+                        this.result[j].Item1 *= Math.Pow(2.0, _power);// no es potencia
                     }
                 }
 
@@ -64,20 +57,42 @@ class Search // Cambiar los modificardores de acceso
             if (Data.wordsIndex.ContainsKey(normalizedQuery[i]))
             {
                 _wordIndex = Data.wordsIndex[normalizedQuery[i]];
-                for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+                if (operators[i] == "!" || operators[i].Contains('^'))
                 {
-                    if ((operators[i] == "!" && Data.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Data.tf[_wordIndex][j] == 0))
+                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
                     {
-                        this.result[j].Item1 *= 0;
+                        if ((operators[i] == "!" && Data.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Data.tf[_wordIndex][j] == 0))
+                        {
+                            this.result[j].Item1 *= 0;
+                        }
                     }
                 }
-                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(normalizedQuery[i+1]))
+                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(normalizedQuery[i + 1]))
                 {
-                    (int, int, int)[] a = Tools.minDistance(Data.wordsIndex[normalizedQuery[i]], Data.wordsIndex[normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT);
-                    for (int j = 0; j < a.Length; j++)
+                    distancesList.Add(Tools.minDistance(Data.wordsIndex[normalizedQuery[i]], Data.wordsIndex[normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT));
+                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
                     {
-                        this.result[a[j].Item3].Item1 += a[j].Item2 / a[j].Item1;
+                        System.Console.WriteLine(distancesList[distancesList.Count - 1][j] + " " + j);
                     }
+                }
+            }
+        }
+
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
+        {
+            if (this.result[i].Item1 > maxScore)
+            {
+                maxScore = this.result[i].Item1;
+            }
+        }
+        
+        for (int i = 0; i < distancesList.Count; i++)
+        {
+            for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+            {
+                if (this.result[j].Item1 != 0)
+                {
+                    this.result[j].Item1 += maxScore / (double)distancesList[i][j];
                 }
             }
         }
@@ -96,7 +111,10 @@ class Search // Cambiar los modificardores de acceso
     {
         int querySize = normalizedQuery.Count;
         string[] operators = new string[querySize];
-        int k = 0;
+        int _k, _m;
+        bool flag = false;
+
+        _m = _k = 0;
 
         for (int i = 0; i < querySize; i++)
         {
@@ -107,42 +125,58 @@ class Search // Cambiar los modificardores de acceso
         {
             for (int j = 0; j < normalizedQuery[i].Length; j++)
             {
-                if (normalizedQuery[i].Length > 1)
+                switch (normalizedQuery[i][j])
                 {
-                    if (normalizedQuery[i][j] == '!')
-                    {
-                        operators[k] = "!";
-                        continue;
-                    }
-                    if (normalizedQuery[i][j] == '*' && !operators[i].Contains('!'))
-                    {
-                        operators[k] += "*";
-                        continue;
-                    }
-                    if (normalizedQuery[i][j] == '^' && !operators[i].Contains('!'))
-                    {
-                        operators[k] = "^" + operators[k];
-                        continue;
-                    }
-                }
-                else if (normalizedQuery[i][j] == '~')
-                {
-                    k--;
-                    if (operators[k] != "!")
-                    {
-                        operators[k] = "~";
-                        operators[k + 1] = "~";
-                    }
-                }
-                else if (normalizedQuery[i][j] == '!' || normalizedQuery[i][j] == '^' || normalizedQuery[i][j] == '*')
-                {
-                    k--;
+                    case '!':
+                        _m++;
+                        operators[_k] = "!";
+                        break;
+                    case '*':
+                        _m++;
+                        if (!operators[_k].Contains('!'))
+                        {
+                            operators[_k] += "*";
+                        }
+                        break;
+                    case '^':
+                        _m++;
+                        if (!operators[_k].Contains('!'))
+                        {
+                            operators[_k] = "^" + operators[_k];
+                        }
+                        break;
+                    case '~':
+                        _m++;
+                        flag = true;
+                        break;
                 }
             }
-            k++;
+
+            if (_m == normalizedQuery[i].Length)
+            {
+                operators[_k] = "";
+                _k--;
+                if (operators[_k] != "!" && flag)
+                {
+                    operators[_k] += "~";
+                    operators[_k + 1] = "~";
+                    _m++;
+                }
+            }
+
+            _k++;
+            _m = 0;
+            flag = false;
         }
-        string[] _operators = new string[k];
-        for (int i = 0; i < k; i++)
+
+        string[] _operators = new string[_k];
+
+        for (int i = 0; i < querySize; i++)
+        {
+            System.Console.WriteLine(i + " " + operators[i]);
+        }
+
+        for (int i = 0; i < _k; i++)
         {
             _operators[i] = operators[i];
         }
@@ -154,7 +188,6 @@ class Search // Cambiar los modificardores de acceso
 
     void sortResult(int DOCUMENTS_AMOUNT)
     {
-
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
             for (int j = i + 1; j < DOCUMENTS_AMOUNT; j++)
@@ -171,7 +204,6 @@ class Search // Cambiar los modificardores de acceso
 
     void resizeResult()
     { //Optimizable con sortResult
-
         int newSize = 0;
 
         for (int i = 0; i < this.result.Length; i++)
