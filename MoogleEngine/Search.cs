@@ -5,13 +5,14 @@ class Search // Cambiar los modificardores de acceso
     public string suggestion;
     public int QUERY_WORDS_AMOUNT;
     public (double, int)[] result;
+    public List<string> normalizedQuery;
 
     public Search(string query, TextProcess Data)
     {
         List<int[]> distancesList = new List<int[]>();
-        List<string> normalizedQuery = Tools.Normalize(query, true);
-        string[] operators = FindOperators(normalizedQuery);
-        normalizedQuery = Tools.Normalize(query);
+        this.normalizedQuery = Tools.Normalize(query, true);
+        string[] operators = FindOperators(this.normalizedQuery);
+        this.normalizedQuery = Tools.Normalize(query);
 
         int DOCUMENTS_AMOUNT = Data.DOCUMENTS_AMOUNT;
         int _wordIndex;
@@ -19,7 +20,7 @@ class Search // Cambiar los modificardores de acceso
         string closestWord;
 
         this.suggestion = "";
-        this.QUERY_WORDS_AMOUNT = normalizedQuery.Count;
+        this.QUERY_WORDS_AMOUNT = this.normalizedQuery.Count;
         this.result = new (double, int)[DOCUMENTS_AMOUNT];
 
 
@@ -30,9 +31,9 @@ class Search // Cambiar los modificardores de acceso
 
         for (int i = 0; i < QUERY_WORDS_AMOUNT; i++)
         {
-            if (Data.wordsIndex.ContainsKey(normalizedQuery[i]))
+            if (Data.wordsIndex.ContainsKey(this.normalizedQuery[i]))
             {
-                _wordIndex = Data.wordsIndex[normalizedQuery[i]];
+                _wordIndex = Data.wordsIndex[this.normalizedQuery[i]];
                 for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
                 {
                     this.result[j].Item1 += Data.tfIdf[_wordIndex, j];
@@ -43,20 +44,20 @@ class Search // Cambiar los modificardores de acceso
                     }
                 }
 
-                suggestion += normalizedQuery[i] + " ";
+                suggestion += this.normalizedQuery[i] + " ";
             }
             else
             {
-                closestWord = Tools.ClosestWord(normalizedQuery[i], Data);
+                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Data);
                 suggestion += closestWord + " ";
             }
         }
 
         for (int i = 0; i < QUERY_WORDS_AMOUNT; i++)
         {
-            if (Data.wordsIndex.ContainsKey(normalizedQuery[i]))
+            if (Data.wordsIndex.ContainsKey(this.normalizedQuery[i]))
             {
-                _wordIndex = Data.wordsIndex[normalizedQuery[i]];
+                _wordIndex = Data.wordsIndex[this.normalizedQuery[i]];
                 if (operators[i] == "!" || operators[i].Contains('^'))
                 {
                     for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
@@ -67,9 +68,9 @@ class Search // Cambiar los modificardores de acceso
                         }
                     }
                 }
-                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(normalizedQuery[i + 1]))
+                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
                 {
-                    distancesList.Add(Tools.minDistance(Data.wordsIndex[normalizedQuery[i]], Data.wordsIndex[normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT));
+                    distancesList.Add(Tools.minDistance(Data.wordsIndex[this.normalizedQuery[i]], Data.wordsIndex[this.normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT));
                     for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
                     {
                         System.Console.WriteLine(distancesList[distancesList.Count - 1][j] + " " + j);
@@ -85,7 +86,7 @@ class Search // Cambiar los modificardores de acceso
                 maxScore = this.result[i].Item1;
             }
         }
-        
+
         for (int i = 0; i < distancesList.Count; i++)
         {
             for (int j = 0; j < DOCUMENTS_AMOUNT; j++)

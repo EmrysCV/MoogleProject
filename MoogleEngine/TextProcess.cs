@@ -20,6 +20,7 @@ public class TextProcess
     public List<int[]> tf;
     public double[,] tfIdf;
     public List<List<int>[]> wordPositionInText;
+    public List<string>[] textWordByWord;
     public int DOCUMENTS_AMOUNT;
 
     public TextProcess(List<string> documents)
@@ -27,6 +28,7 @@ public class TextProcess
         this.DOCUMENTS_AMOUNT = documents.Count;
         this.wordsIndex = new Dictionary<string, int>();
         this.wordPositionInText = new List<List<int>[]>();
+        this.textWordByWord = new List<string>[this.DOCUMENTS_AMOUNT];
         this.tf = new List<int[]>();
         CalcTf(documents);
         this.tfIdf = new double[this.tf.Count, this.DOCUMENTS_AMOUNT];
@@ -56,8 +58,8 @@ public class TextProcess
 
         foreach (string document in documents)
         {
-
             List<string> normalizedDocument = Tools.Normalize(document);
+            textWordByWord[documentIndex] = normalizedDocument;
             foreach (string word in normalizedDocument)
             {
                 if (!this.wordsIndex.ContainsKey(word))

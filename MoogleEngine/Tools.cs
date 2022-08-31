@@ -181,6 +181,42 @@ public static class Tools
 
         return minDistancePerDocument;
     }
+    public static string FindSnippet(int documentIndex, TextProcess Data, List<string> normalizedQuery)
+    {
+        int i = 1, maxI = 0;
+        double maxScore = 0d;
+        double _score = 0d;
+        string snippet = "";
+        List<string> document = Data.textWordByWord[documentIndex];
+
+        while (i * 100 < document.Count + 100)
+        {
+            for (int j = (i - 1) * 100; j < i * 100 && j < document.Count; j++)
+            {
+                for (int k = 0; k < normalizedQuery.Count; k++)
+                {
+                    if (document[j] == normalizedQuery[k])
+                    {
+                        _score += Data.tfIdf[Data.wordsIndex[normalizedQuery[k]], documentIndex];
+                        break;
+                    }
+                }
+            }
+            if (_score > maxScore)
+            {
+                maxScore = _score;
+                maxI = i;
+            }
+            _score = 0d;
+            i++;
+        }
+
+        for (int j = (maxI - 1) * 100; j < maxI * 100 && j < document.Count; j++)
+        {
+            snippet += document[j] + " ";
+        }
+        return snippet;
+    }
     /*
     Metodo para leer los archivos de texto en la carpeta Content:
         -El Metodo Directory.GetFiles() devuevle un array de strings con las direcciones de los archivos y carpetas 
