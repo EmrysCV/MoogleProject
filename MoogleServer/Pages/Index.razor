@@ -2,7 +2,7 @@
 
 <PageTitle>Moogle!</PageTitle>
 
-<h1>🔍 Moogle!</h1>
+<h1 class = "moogleName">🔍 Moogle!</h1>
 
 <input class="p-1 my-4" @bind="query" placeholder="Introduzca su búsqueda">
 
@@ -20,6 +20,7 @@
         <div class="item">
             <p class="title">@item.Title</p>
             <p>... @item.Snippet ...</p>
+            <p class="score"><strong>@item.Score</strong></p>
         </div>
     </li>
 }
@@ -30,6 +31,6 @@
     private SearchResult result = new SearchResult();
 
     private void RunQuery() {
-        result = Moogle.Query(query, Program.Data, Program.content);
+        result = Moogle.Query(query, Program.Data, Program.content, Program.synonymsDictionary);
     }
 }

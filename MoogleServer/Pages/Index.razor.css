@@ -23,7 +23,15 @@ p {
     padding-right: 5%;
     background-color: #23222b;
     border: 1px solid gray;
+    border-radius: 10px;
 }
 .page {
     background-color: #1c1b22;
+}
+.moogleName {
+    color: #bbddf5;
+}
+.score {
+    text-align: right;
+    color: #fbfbfe;
 }

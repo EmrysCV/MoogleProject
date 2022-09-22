@@ -5,17 +5,18 @@ using System.Diagnostics;
 
 public class Program
 {
-    public static TextProcess Data;
+    public static TextProcessor Data;
     public static (List<string>, string[]) content;
-
+    public static Dictionary<string, HashSet<string>> synonymsDictionary;
     public static void Main(string[] args)
     {
         Stopwatch crono = new Stopwatch();
-
         crono.Start();
+        
         content = Tools.LoadDocuments();
-        Data = new TextProcess(content.Item1);
-
+        synonymsDictionary = Tools.LoadAndCreateSynonymsDictionary();
+        Data = new TextProcessor(content.Item1);
+        
         crono.Stop();
         System.Console.WriteLine((double)crono.ElapsedMilliseconds / 1000);
 

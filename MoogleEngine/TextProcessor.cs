@@ -14,16 +14,16 @@
 */
 namespace MoogleEngine;
 
-public class TextProcess
+public class TextProcessor
 {
-    public Dictionary<string, int> wordsIndex;
-    public List<int[]> tf;
-    public double[,] tfIdf;
-    public List<List<int>[]> wordPositionInText;
-    public List<string>[] textWordByWord;
-    public int DOCUMENTS_AMOUNT;
+    public Dictionary<string, int> wordsIndex {get; private set;}
+    public List<int[]> tf {get; private set;}
+    public double[,] tfIdf {get; private set;}
+    public List<List<int>[]> wordPositionInText {get; private set;}
+    public List<string>[] textWordByWord {get; private set;}
+    public int DOCUMENTS_AMOUNT {get; private set;}
 
-    public TextProcess(List<string> documents)
+    public TextProcessor(List<string> documents)
     {
         this.DOCUMENTS_AMOUNT = documents.Count;
         this.wordsIndex = new Dictionary<string, int>();

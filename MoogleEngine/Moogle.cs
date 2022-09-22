@@ -4,15 +4,24 @@ namespace MoogleEngine;
 
 public static class Moogle
 {
-    public static SearchResult Query(string query, TextProcess Data, (List<string>, string[]) content)
-    {
+    public static Dictionary<string, SearchResult> memory = new Dictionary<string, SearchResult>();
 
+    public static SearchResult Query(string query, TextProcessor Data, (List<string>, string[]) content, Dictionary<string, HashSet<string>> synonymsDictionary)
+    {
         Stopwatch cronos = new Stopwatch();
         cronos.Start();
+        
+        if (memory.ContainsKey(query))
+        {
+            cronos.Stop();
+            System.Console.WriteLine((double)cronos.ElapsedMilliseconds / 1000);
+            System.Console.WriteLine(Data.tf.Count);
+            return memory[query];
+        }
 
         char[] spliters = { '\\', '/', '-' };
 
-        Search result = new Search(query, Data);
+        Search result = new Search(query, Data, synonymsDictionary);
         SearchItem[] items;
 
         int resultSize = result.result.Length;
@@ -38,6 +47,8 @@ public static class Moogle
         cronos.Stop();
         System.Console.WriteLine((double)cronos.ElapsedMilliseconds / 1000);
         System.Console.WriteLine(Data.tf.Count);
+
+        memory.Add(query, new SearchResult(items, result.suggestion));
 
         return new SearchResult(items, result.suggestion);
     }
