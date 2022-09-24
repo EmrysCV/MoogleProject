@@ -78,6 +78,55 @@ class Search
             }
         }
     }
+
+    void ApplyOperators(TextProcessor Data, string[] operators)
+    {
+        List<int[]> distancesList = new List<int[]>();
+        double maxScore = (double)int.MinValue;
+        int _wordIndex;
+
+        for (int i = 0; i < this.queryWordsAmount; i++)
+        {
+            if (Data.wordsIndex.ContainsKey(this.normalizedQuery[i]))
+            {
+                _wordIndex = Data.wordsIndex[this.normalizedQuery[i]];
+                if (operators[i] == "!" || operators[i].Contains('^'))
+                {
+                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+                    {
+                        if ((operators[i] == "!" && Data.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Data.tf[_wordIndex][j] == 0))
+                        {
+                            this.result[j].Item1 *= 0;
+                        }
+                    }
+                }
+                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
+                {
+                    distancesList.Add(Tools.MinDistance(Data.wordsIndex[this.normalizedQuery[i]], Data.wordsIndex[this.normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT));
+                }
+            }
+        }
+
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
+        {
+            if (this.result[i].Item1 > maxScore)
+            {
+                maxScore = this.result[i].Item1;
+            }
+        }
+
+        for (int i = 0; i < distancesList.Count; i++)
+        {
+            for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
+            {
+                if (this.result[j].Item1 != 0)
+                {
+                    this.result[j].Item1 += maxScore / (double)distancesList[i][j];
+                }
+            }
+        }
+    }
+
     void SortResult()
     {
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
@@ -115,57 +164,5 @@ class Search
         }
 
         this.result = _auxResult;
-    }
-
-    void ApplyOperators(TextProcessor Data, string[] operators)
-    {
-        List<int[]> distancesList = new List<int[]>();
-        double maxScore = (double)int.MinValue;
-        int _wordIndex;
-
-        for (int i = 0; i < this.queryWordsAmount; i++)
-        {
-            if (Data.wordsIndex.ContainsKey(this.normalizedQuery[i]))
-            {
-                _wordIndex = Data.wordsIndex[this.normalizedQuery[i]];
-                if (operators[i] == "!" || operators[i].Contains('^'))
-                {
-                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
-                    {
-                        if ((operators[i] == "!" && Data.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Data.tf[_wordIndex][j] == 0))
-                        {
-                            this.result[j].Item1 *= 0;
-                        }
-                    }
-                }
-                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Data.wordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
-                {
-                    distancesList.Add(Tools.minDistance(Data.wordsIndex[this.normalizedQuery[i]], Data.wordsIndex[this.normalizedQuery[i + 1]], Data.wordPositionInText, DOCUMENTS_AMOUNT));
-                    for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
-                    {
-                        System.Console.WriteLine(distancesList[distancesList.Count - 1][j] + " " + j);
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
-        {
-            if (this.result[i].Item1 > maxScore)
-            {
-                maxScore = this.result[i].Item1;
-            }
-        }
-
-        for (int i = 0; i < distancesList.Count; i++)
-        {
-            for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
-            {
-                if (this.result[j].Item1 != 0)
-                {
-                    this.result[j].Item1 += maxScore / (double)distancesList[i][j];
-                }
-            }
-        }
     }
 }

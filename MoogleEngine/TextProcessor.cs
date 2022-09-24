@@ -30,9 +30,9 @@ public class TextProcessor
         this.wordPositionInText = new List<List<int>[]>();
         this.textWordByWord = new List<string>[this.DOCUMENTS_AMOUNT];
         this.tf = new List<int[]>();
-        CalcTf(documents);
+        CalcTF(documents);
         this.tfIdf = new double[this.tf.Count, this.DOCUMENTS_AMOUNT];
-        CalcTfIdf();
+        CalcTFIDF();
     }
 
     void AddWord(string word, int wordIndex, int documentIndex, int wordPosition)
@@ -50,7 +50,7 @@ public class TextProcessor
         this.wordPositionInText[wordIndex][documentIndex].Add(wordPosition);
     }
 
-    public void CalcTf(List<string> documents)
+    public void CalcTF(List<string> documents)
     {
         int wordIndex = 0;
         int documentIndex = 0;
@@ -79,7 +79,7 @@ public class TextProcessor
         }
     }
 
-    double CalcIdf(int[] wordTf)
+    double CalcIDF(int[] wordTf)
     {
         double wordIdf;
         int df = 0;
@@ -88,19 +88,19 @@ public class TextProcessor
         {
             if (wordTf[i] != 0) df++;
         }
-        double logArgument = (double)df / this.DOCUMENTS_AMOUNT;
-        wordIdf = Math.Log10(1 + logArgument);
+        double logArgument = (double)this.DOCUMENTS_AMOUNT / df;
+        wordIdf = Math.Log10(logArgument);
 
         return wordIdf;
     }
 
-    public void CalcTfIdf()
+    public void CalcTFIDF()
     {
         double _wordIdf;
 
         for (int i = 0; i < this.tf.Count; i++)
         {
-            _wordIdf = CalcIdf(this.tf[i]);
+            _wordIdf = CalcIDF(this.tf[i]);
             for (int j = 0; j < this.DOCUMENTS_AMOUNT; j++)
             {
                 this.tfIdf[i, j] = (this.tf[i][j] * _wordIdf);

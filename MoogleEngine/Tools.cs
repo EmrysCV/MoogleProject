@@ -100,8 +100,13 @@ public static class Tools
         }
         return result;
     }
-    
-    public static int[] minDistance(int word1, int word2, List<List<int>[]> wordPositionsInText, int DOCUMENTS_AMOUNT)
+    /*
+         Recive como parametros las dos palabras para las cuales se va comprobar cual es la menor distancia entre ellas en cada texto, 
+      la estructura de datos en la cual estan almacenadas las posiciones de cada palabra en cada texto y la cantidad de documentos 
+      de nuestro universo de documentos.
+         Devuelve un array de enteros con la distancia minima entre estas dos palabras en cada documento.
+    */
+    public static int[] MinDistance(int word1, int word2, List<List<int>[]> wordPositionsInText, int DOCUMENTS_AMOUNT)
     {
         int[] minDistancePerDocument = new int[DOCUMENTS_AMOUNT];
         int minDistance = int.MaxValue;
