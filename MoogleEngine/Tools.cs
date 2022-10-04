@@ -7,6 +7,11 @@ namespace MoogleEngine;
 
 public static class Tools
 {
+    /*
+        Recive como parametros dos palabras las cuales se va a calcular la distancia lexicografica(cuantas letras hay que cambiar, añadir o
+      eliminar para que sean iguales)
+        Devuelve la distancia lexicografica entre las dos palabras
+    */
     public static int EditDistance(string wordA, string wordB)
     {
         int sizeA = wordA.Length;
@@ -41,6 +46,11 @@ public static class Tools
         return dp[sizeA, sizeB];
     }
     
+    /*
+        Recive como parametros el texto que se va a normalizar(eliminar todos los caracteres que no sean digitos, letras o espacios,
+      ademas de llevar todo a minusculas) y una variable indicando si el texto es una query o no(por defecto en falso)
+        Devuelve una lista donde en cada posicion continene una de las palabras, del texto recivido como parametro, ya normalizada
+    */
     public static List<string> Normalize(string text, bool isQuery = false)
     {
         char[] spliters = { ' ', '\n', '\t', ',', '.', ':', ';' };
@@ -50,7 +60,6 @@ public static class Tools
 
         foreach (string word in words)
         {
-
             newWord = "";
             foreach (char c in word)
             {
@@ -83,13 +92,19 @@ public static class Tools
 
         return listWords;
     }
-    
-    public static string ClosestWord(string word, TextProcessor Data)
+
+    /*
+        Recive como parametros la palabra de cual vamos a obtener la que mas se parce en nuestro diccionario y el diccionario 
+    donde esta guardado todo nuestro universo de palabras
+        Retorna la palabra que mas se parece a la palabra recivida como parametro
+    */
+
+    public static string ClosestWord(string word, Dictionary<string, int> wordsIndex)
     {
         int minDistance = int.MaxValue;
         string result = "";
 
-        foreach (KeyValuePair<string, int> element in Data.wordsIndex)
+        foreach (KeyValuePair<string, int> element in wordsIndex)
         {
             int distance = Tools.EditDistance(word, element.Key);
             if (distance < minDistance)
@@ -100,12 +115,14 @@ public static class Tools
         }
         return result;
     }
+
     /*
-         Recive como parametros las dos palabras para las cuales se va comprobar cual es la menor distancia entre ellas en cada texto, 
+        Recive como parametros las dos palabras para las cuales se va comprobar cual es la menor distancia entre ellas en cada texto, 
       la estructura de datos en la cual estan almacenadas las posiciones de cada palabra en cada texto y la cantidad de documentos 
       de nuestro universo de documentos.
-         Devuelve un array de enteros con la distancia minima entre estas dos palabras en cada documento.
+        Devuelve un array de enteros con la distancia minima entre estas dos palabras en cada documento.
     */
+
     public static int[] MinDistance(int word1, int word2, List<List<int>[]> wordPositionsInText, int DOCUMENTS_AMOUNT)
     {
         int[] minDistancePerDocument = new int[DOCUMENTS_AMOUNT];
@@ -153,6 +170,12 @@ public static class Tools
 
         return minDistancePerDocument;
     }
+
+    /*
+        Recive como parametros el indice asignado al documento en el cual se busca el snippet, la estructura de datos que contiene todos los datos
+      extraidos del preprocesamiento y la query normalizada
+        Devuelve una cadena de texto con el snippet que mas importante para la query que se hizo
+    */
 
     public static string FindSnippet(int documentIndex, TextProcessor Data, List<string> normalizedQuery)
     {
@@ -203,6 +226,10 @@ public static class Tools
         return snippet;
     }
 
+    /*
+        Recive como parametro la query normalizada sin quitarle los operadores
+        Devuelve en una array los operadores asociados a cada palabra
+    */
     public static string[] FindOperators(List<string> normalizedQuery)
     {
         int querySize = normalizedQuery.Count;
@@ -282,6 +309,9 @@ public static class Tools
         //!**el **perro ! e^s e~l ^!papa ~ !de lo!s ^**cachorros
     }
 
+    /*
+        Devuelve una lista con los contenidos de los documentos y un array con las direcciones relativas de cada documento
+    */
     public static (List<string>, string[]) LoadDocuments()
     {
         string[] directory = Directory.GetFiles(Path.Join("..", "Content"));
@@ -303,6 +333,9 @@ public static class Tools
         return (fileContent, directory);
     }
 
+    /*
+        Devuelve un diccionario que relaciona cada palabra con el conjunto de todos sus posibles sinonimos
+    */
     public static Dictionary<string, HashSet<string>> LoadAndCreateSynonymsDictionary()
     {
         Dictionary<string, HashSet<string>> synonymsDictionary = new Dictionary<string, HashSet<string>>();
@@ -334,5 +367,4 @@ public static class Tools
 public class _Sinonyms
 {
     public string[][] words { get; set; }
-
 }

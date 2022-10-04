@@ -36,7 +36,7 @@ class Search
             }
             else
             {
-                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Data);
+                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Data.wordsIndex);
                 suggestion += closestWord + " ";
             }
             if (synonymsDictionary.ContainsKey(this.normalizedQuery[i]))
