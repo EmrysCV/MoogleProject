@@ -8,6 +8,7 @@ public class Program
     public static TextProcessor Data;
     public static (List<string>, string[]) content;
     public static Dictionary<string, HashSet<string>> synonymsDictionary;
+
     public static void Main(string[] args)
     {
         Stopwatch crono = new Stopwatch();

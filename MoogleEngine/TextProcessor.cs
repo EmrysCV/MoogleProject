@@ -16,12 +16,12 @@ namespace MoogleEngine;
 
 public class TextProcessor
 {
-    public Dictionary<string, int> wordsIndex {get; private set;}
-    public List<int[]> tf {get; private set;}
-    public double[,] tfIdf {get; private set;}
-    public List<List<int>[]> wordPositionInText {get; private set;}
-    public List<string>[] textWordByWord {get; private set;}
-    public int DOCUMENTS_AMOUNT {get; private set;}
+    public Dictionary<string, int> wordsIndex { get; private set; }
+    public List<int[]> tf { get; private set; }
+    public double[,] tfIdf { get; private set; }
+    public List<List<int>[]> wordPositionInText { get; private set; }
+    public List<string>[] textWordByWord { get; private set; }
+    public int DOCUMENTS_AMOUNT { get; private set; }
 
     public TextProcessor(List<string> documents)
     {
@@ -60,6 +60,7 @@ public class TextProcessor
         {
             List<string> normalizedDocument = Tools.Normalize(document);
             textWordByWord[documentIndex] = normalizedDocument;
+
             foreach (string word in normalizedDocument)
             {
                 if (!this.wordsIndex.ContainsKey(word))

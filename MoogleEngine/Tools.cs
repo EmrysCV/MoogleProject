@@ -45,7 +45,7 @@ public static class Tools
 
         return dp[sizeA, sizeB];
     }
-    
+
     /*
         Recive como parametros el texto que se va a normalizar(eliminar todos los caracteres que no sean digitos, letras o espacios,
       ademas de llevar todo a minusculas) y una variable indicando si el texto es una query o no(por defecto en falso)
@@ -319,15 +319,11 @@ public static class Tools
 
         foreach (string document in directory)
         {
-            if (File.ReadAllText(document) != null)
-            {
-                fileContent.Add(File.ReadAllText(document));
-            }
-            else
-            {
-                fileContent.Add("");
-            }
+            string documentBody = File.ReadAllText(document, Encoding.Latin1);
+
+            fileContent.Add(documentBody != null ? document : "");
         }
+        
         System.Console.WriteLine(directory.Length + " " + fileContent.Count);
 
         return (fileContent, directory);
@@ -339,9 +335,9 @@ public static class Tools
     public static Dictionary<string, HashSet<string>> LoadAndCreateSynonymsDictionary()
     {
         Dictionary<string, HashSet<string>> synonymsDictionary = new Dictionary<string, HashSet<string>>();
-        string json = File.ReadAllText(Path.Join("..","sinonimos.json"));
+        string json = File.ReadAllText(Path.Join("..", "sinonimos.json"));
         _Sinonyms deserializedJson = JsonSerializer.Deserialize<_Sinonyms>(json);
-        
+
         for (int i = 0; i < deserializedJson.words.Length; i++)
         {
             for (int j = 0; j < deserializedJson.words[i].Length; j++)
