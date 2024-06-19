@@ -99,18 +99,18 @@ public static class Tools
         Retorna la palabra que mas se parece a la palabra recivida como parametro
     */
 
-    public static string ClosestWord(string word, Dictionary<string, int> wordsIndex)
+    public static string ClosestWord(string queryWord, Dictionary<string, int> wordsIndex)
     {
         int minDistance = int.MaxValue;
         string result = "";
 
-        foreach (KeyValuePair<string, int> element in wordsIndex)
+        foreach (string word in wordsIndex.Keys)
         {
-            int distance = Tools.EditDistance(word, element.Key);
+            int distance = Tools.EditDistance(queryWord, word);
             if (distance < minDistance)
             {
                 minDistance = distance;
-                result = element.Key;
+                result = word;
             }
         }
         return result;
@@ -319,11 +319,11 @@ public static class Tools
 
         foreach (string document in directory)
         {
-            string documentBody = File.ReadAllText(document, Encoding.Latin1);
+            string documentBody = File.ReadAllText(document);
 
-            fileContent.Add(documentBody != null ? document : "");
+            fileContent.Add(documentBody != null ? documentBody : "");
         }
-        
+
         System.Console.WriteLine(directory.Length + " " + fileContent.Count);
 
         return (fileContent, directory);
