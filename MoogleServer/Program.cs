@@ -6,21 +6,19 @@ using System.Security.Principal;
 
 public class Program
 {
-    public static TextProcessor Data;
-    public static (List<string>, string[]) content;
-    public static Dictionary<string, HashSet<string>> synonymsDictionary;
+    public static VectorModel Model { get; private set; }
+    public static (List<string>, string[]) Corpus { get; private set; }
+    public static Dictionary<string, HashSet<string>> SynonymsDictionary { get; private set; }
 
     public static void Main(string[] args)
     {
-       
-    
         Stopwatch crono = new Stopwatch();
         crono.Start();
-        
-        content = Tools.LoadDocuments();
-        synonymsDictionary = Tools.LoadAndCreateSynonymsDictionary();
-        Data = new TextProcessor(content.Item1);
-        
+
+        Corpus = Tools.LoadDocuments();
+        SynonymsDictionary = Tools.LoadAndCreateSynonymsDictionary();
+        Model = new VectorModel(Corpus.Item1);
+
         crono.Stop();
         System.Console.WriteLine((double)crono.ElapsedMilliseconds / 1000);
 

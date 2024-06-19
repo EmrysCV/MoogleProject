@@ -205,13 +205,13 @@ public static class Tools
         Devuelve una cadena de texto con el snippet que mas importante para la query que se hizo
     */
 
-    public static string FindSnippet(int documentIndex, TextProcessor Data, List<string> normalizedQuery)
+    public static string FindSnippet(int documentIndex, VectorModel Model, List<string> normalizedQuery)
     {
         int maxScoreI = 0;
         double maxScore = 0d;
         double _score = 0d;
-        string snippet = "";
-        Token[] document = Data.textWordByWord[documentIndex];
+        
+        Token[] document = Model.textWordByWord[documentIndex];
 
         for (int i = 0; i < 100 && i < document.Length; i++)
         {
@@ -219,7 +219,7 @@ public static class Tools
             {
                 if (document[i].Lexem == normalizedQuery[j])
                 {
-                    _score += Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score += Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
                     break;
                 }
             }
@@ -233,11 +233,11 @@ public static class Tools
             {
                 if (document[i].Lexem == normalizedQuery[j])
                 {
-                    _score += Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score += Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
                 }
                 if (document[i - 100].Lexem == normalizedQuery[j])
                 {
-                    _score -= Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score -= Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
                 }
             }
             if (_score > maxScore)
@@ -254,7 +254,7 @@ public static class Tools
             maxScoreEndI = i;
         }
 
-        return Data.documents[documentIndex].Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
+        return Model.documents[documentIndex].Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
     }
 
     /*

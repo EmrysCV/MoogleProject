@@ -14,7 +14,7 @@
 */
 namespace MoogleEngine;
 
-public class TextProcessor
+public class VectorModel
 {
     public Dictionary<string, int> wordsIndex { get; private set; }
     public List<int[]> tf { get; private set; }
@@ -24,7 +24,7 @@ public class TextProcessor
     public int DOCUMENTS_AMOUNT { get; private set; }
     public List<string> documents {get; private set;}
 
-    public TextProcessor(List<string> documents)
+    public VectorModel(List<string> documents)
     {
         this.DOCUMENTS_AMOUNT = documents.Count;
         this.wordsIndex = new Dictionary<string, int>();
