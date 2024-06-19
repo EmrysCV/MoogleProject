@@ -19,8 +19,6 @@ public static class Moogle
             return memory[query];
         }
 
-        char[] spliters = { '\\', '/', '-' };
-
         Search result = new Search(query, model, synonymsDictionary);
         SearchItem[] items;
 
@@ -39,7 +37,7 @@ public static class Moogle
             {
                 int _documentIndex = result.result[i].Item2;
 
-                items[i] = new SearchItem(corpus[_documentIndex].Name, Tools.FindSnippet(_documentIndex, model, corpus, result.normalizedQuery), (float)(result.result[i].Item1));
+                items[i] = new SearchItem(corpus[_documentIndex].Name, Tools.FindSnippet(_documentIndex, model, corpus, result.normalizedQuery), (float) result.result[i].Item1);
             }
         }
 

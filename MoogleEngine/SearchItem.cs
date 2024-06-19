@@ -1,6 +1,6 @@
 namespace MoogleEngine;
 
-public class SearchItem
+public class SearchItem : IComparable<SearchItem>
 {
     public SearchItem(string title, string snippet, float score)
     {
@@ -14,4 +14,9 @@ public class SearchItem
     public string Snippet { get; private set; }
 
     public float Score { get; private set; }
+
+    public int CompareTo(SearchItem? obj)
+    {
+        return this.Score.CompareTo(obj.Score);
+    }
 }

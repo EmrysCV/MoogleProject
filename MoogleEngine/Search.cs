@@ -52,6 +52,7 @@ class Search
         }
 
         ApplyOperators(Model, operators);
+        //Array.Sort(this.result);
         SortResult();
         ResizeResult();
 

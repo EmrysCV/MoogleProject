@@ -52,6 +52,8 @@ public static class Tools
       ademas de llevar todo a minusculas) y una variable indicando si el texto es una query o no(por defecto en falso)
         Devuelve una lista donde en cada posicion continene una de las palabras, del texto recivido como parametro, ya normalizada
     */
+
+    //TODO ver que hago con esto
     public static List<string> Normalize(string text, bool isQuery = false)
     {
         char[] spliters = { ' ', '\n', '\t', ',', '.', ':', ';' };
@@ -255,7 +257,12 @@ public static class Tools
             maxScoreEndI = i;
         }
 
-        return corpus[documentIndex].Text.Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
+        string snippet = corpus[documentIndex].Text.Substring(
+                document[maxScoreI].Position,
+                document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position
+                );
+
+        return snippet;
     }
 
     /*
@@ -348,11 +355,6 @@ public static class Tools
     {
         string[] directory = Directory.GetFiles(Path.Join("..", "Content"));
         List<Document> corpus = new();
-
-        foreach (string a in directory)
-        {
-            Console.WriteLine(a);
-        }
 
         foreach (string document in directory)
         {
