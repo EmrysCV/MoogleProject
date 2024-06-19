@@ -64,13 +64,6 @@ public static class Tools
             foreach (char c in word)
             {
                 char _ac = char.ToLower(c);
-                if (_ac == 'á') { newWord += "a"; continue; }
-                if (_ac == 'é') { newWord += "e"; continue; }
-                if (_ac == 'í') { newWord += "i"; continue; }
-                if (_ac == 'ó') { newWord += "o"; continue; }
-                if (_ac == 'ú') { newWord += "u"; continue; }
-                if (_ac == 'ü') { newWord += "u"; continue; }
-                //if(_ac == 'ñ'){ newWord += "ñ"; continue;}
 
                 if (char.IsLetterOrDigit(_ac))
                 {
@@ -218,13 +211,13 @@ public static class Tools
         double maxScore = 0d;
         double _score = 0d;
         string snippet = "";
-        List<string> document = Data.textWordByWord[documentIndex];
+        Token[] document = Data.textWordByWord[documentIndex];
 
-        for (int i = 0; i < 100 && i < document.Count; i++)
+        for (int i = 0; i < 100 && i < document.Length; i++)
         {
             for (int j = 0; j < normalizedQuery.Count; j++)
             {
-                if (document[i] == normalizedQuery[j])
+                if (document[i].Lexem == normalizedQuery[j])
                 {
                     _score += Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
                     break;
@@ -234,15 +227,15 @@ public static class Tools
 
         maxScore = _score;
 
-        for (int i = 100; i < document.Count; i++)
+        for (int i = 100; i < document.Length; i++)
         {
             for (int j = 0; j < normalizedQuery.Count; j++)
             {
-                if (document[i] == normalizedQuery[j])
+                if (document[i].Lexem == normalizedQuery[j])
                 {
                     _score += Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
                 }
-                if (document[i - 100] == normalizedQuery[j])
+                if (document[i - 100].Lexem == normalizedQuery[j])
                 {
                     _score -= Data.tfIdf[Data.wordsIndex[normalizedQuery[j]], documentIndex];
                 }
@@ -254,9 +247,9 @@ public static class Tools
             }
         }
 
-        for (int i = maxScoreI; i < maxScoreI + 100 && i < document.Count; i++)
+        for (int i = maxScoreI; i < maxScoreI + 100 && i < document.Length; i++)
         {
-            snippet += document[i] + " ";
+            snippet += document[i].Lexem + " ";
         }
         return snippet;
     }

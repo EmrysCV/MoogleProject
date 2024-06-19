@@ -20,7 +20,7 @@ public class TextProcessor
     public List<int[]> tf { get; private set; }
     public double[,] tfIdf { get; private set; }
     public List<List<int>[]> wordPositionInText { get; private set; }
-    public List<string>[] textWordByWord { get; private set; }
+    public Token[][] textWordByWord { get; private set; }
     public int DOCUMENTS_AMOUNT { get; private set; }
 
     public TextProcessor(List<string> documents)
@@ -28,7 +28,7 @@ public class TextProcessor
         this.DOCUMENTS_AMOUNT = documents.Count;
         this.wordsIndex = new Dictionary<string, int>();
         this.wordPositionInText = new List<List<int>[]>();
-        this.textWordByWord = new List<string>[this.DOCUMENTS_AMOUNT];
+        this.textWordByWord = new Token[this.DOCUMENTS_AMOUNT][];
         this.tf = new List<int[]>();
         CalcTF(documents);
         this.tfIdf = new double[this.tf.Count, this.DOCUMENTS_AMOUNT];
@@ -59,8 +59,7 @@ public class TextProcessor
         foreach (string document in documents)
         {
             Token[] normalizedDocument = Tools.Parse(document);
-            
-            //textWordByWord[documentIndex] = normalizedDocument;
+            textWordByWord[documentIndex] = normalizedDocument;
 
             foreach (var word in normalizedDocument)
             {
