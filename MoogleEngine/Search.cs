@@ -29,21 +29,21 @@ class Search
 
         for (int i = 0; i < queryWordsAmount; i++)
         {
-            if (Model.wordsIndex.ContainsKey(this.normalizedQuery[i]))
+            if (Model.WordsIndex.ContainsKey(this.normalizedQuery[i]))
             {
                 ProcessQueryWord(Model, operators, this.normalizedQuery[i], i);
                 suggestion += this.normalizedQuery[i] + " ";
             }
             else
             {
-                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Model.wordsIndex);
+                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Model.WordsIndex);
                 suggestion += closestWord + " ";
             }
             if (synonymsDictionary.ContainsKey(this.normalizedQuery[i]))
             {
                 foreach (string synonym in synonymsDictionary[this.normalizedQuery[i]])
                 {
-                    if (Model.wordsIndex.ContainsKey(synonym))
+                    if (Model.WordsIndex.ContainsKey(synonym))
                     {
                         ProcessQueryWord(Model, operators, synonym, i, true);
                     }
@@ -64,17 +64,17 @@ class Search
 
     void ProcessQueryWord(VectorModel Model, string[] operators, string word, int i, bool isSynonym = false)
     {
-        int _wordIndex = Model.wordsIndex[word];
+        int _wordIndex = Model.WordsIndex[word];
         for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
         {
             if (operators[i].Contains("*"))
             {
                 int _power = operators[i].LastIndexOf("*") - operators[i].IndexOf("*") + 1;
-                this.result[j].Item1 += (isSynonym ? Model.tfIdf[_wordIndex, j] / 2 : Model.tfIdf[_wordIndex, j]) * Math.Pow(2.0, _power);
+                this.result[j].Item1 += (isSynonym ? Model.TFIDF[_wordIndex, j] / 2 : Model.TFIDF[_wordIndex, j]) * Math.Pow(2.0, _power);
             }
             else
             {
-                this.result[j].Item1 += (isSynonym ? Model.tfIdf[_wordIndex, j] / 2 : Model.tfIdf[_wordIndex, j]);
+                this.result[j].Item1 += (isSynonym ? Model.TFIDF[_wordIndex, j] / 2 : Model.TFIDF[_wordIndex, j]);
             }
         }
     }
@@ -87,22 +87,22 @@ class Search
 
         for (int i = 0; i < this.queryWordsAmount; i++)
         {
-            if (Model.wordsIndex.ContainsKey(this.normalizedQuery[i]))
+            if (Model.WordsIndex.ContainsKey(this.normalizedQuery[i]))
             {
-                _wordIndex = Model.wordsIndex[this.normalizedQuery[i]];
+                _wordIndex = Model.WordsIndex[this.normalizedQuery[i]];
                 if (operators[i] == "!" || operators[i].Contains('^'))
                 {
                     for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
                     {
-                        if ((operators[i] == "!" && Model.tf[_wordIndex][j] != 0) || (operators[i].Contains('^') && Model.tf[_wordIndex][j] == 0))
+                        if ((operators[i] == "!" && Model.TF[_wordIndex][j] != 0) || (operators[i].Contains('^') && Model.TF[_wordIndex][j] == 0))
                         {
                             this.result[j].Item1 *= 0;
                         }
                     }
                 }
-                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Model.wordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
+                if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Model.WordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
                 {
-                    distancesList.Add(Tools.MinDistance(Model.wordsIndex[this.normalizedQuery[i]], Model.wordsIndex[this.normalizedQuery[i + 1]], Model.wordPositionInText, DOCUMENTS_AMOUNT));
+                    distancesList.Add(Tools.MinDistance(Model.WordsIndex[this.normalizedQuery[i]], Model.WordsIndex[this.normalizedQuery[i + 1]], Model.WordPositionInText, DOCUMENTS_AMOUNT));
                 }
             }
         }

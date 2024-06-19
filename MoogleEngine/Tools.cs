@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 
 namespace MoogleEngine;
 
@@ -205,13 +206,13 @@ public static class Tools
         Devuelve una cadena de texto con el snippet que mas importante para la query que se hizo
     */
 
-    public static string FindSnippet(int documentIndex, VectorModel Model, List<string> normalizedQuery)
+    public static string FindSnippet(int documentIndex, VectorModel Model, Document[] corpus, List<string> normalizedQuery)
     {
         int maxScoreI = 0;
         double maxScore = 0d;
         double _score = 0d;
-        
-        Token[] document = Model.textWordByWord[documentIndex];
+
+        Token[] document = Model.TextWordByWord[documentIndex];
 
         for (int i = 0; i < 100 && i < document.Length; i++)
         {
@@ -219,7 +220,7 @@ public static class Tools
             {
                 if (document[i].Lexem == normalizedQuery[j])
                 {
-                    _score += Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score += Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                     break;
                 }
             }
@@ -233,11 +234,11 @@ public static class Tools
             {
                 if (document[i].Lexem == normalizedQuery[j])
                 {
-                    _score += Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score += Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                 }
                 if (document[i - 100].Lexem == normalizedQuery[j])
                 {
-                    _score -= Model.tfIdf[Model.wordsIndex[normalizedQuery[j]], documentIndex];
+                    _score -= Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                 }
             }
             if (_score > maxScore)
@@ -254,7 +255,7 @@ public static class Tools
             maxScoreEndI = i;
         }
 
-        return Model.documents[documentIndex].Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
+        return corpus[documentIndex].Text.Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
     }
 
     /*
@@ -343,21 +344,35 @@ public static class Tools
     /*
         Devuelve una lista con los contenidos de los documentos y un array con las direcciones relativas de cada documento
     */
-    public static (List<string>, string[]) LoadDocuments()
+    public static Document[] LoadDocuments()
     {
         string[] directory = Directory.GetFiles(Path.Join("..", "Content"));
-        List<string> fileContent = new List<string>();
+        List<Document> corpus = new();
+
+        foreach (string a in directory)
+        {
+            Console.WriteLine(a);
+        }
 
         foreach (string document in directory)
         {
-            string documentBody = File.ReadAllText(document);
+            char[] splitters = { '/', '\\' };
+            string documentText = File.ReadAllText(document);
 
-            fileContent.Add(documentBody != null ? documentBody : "");
+            if (documentText != null)
+            {
+                string _name = document.Split(splitters).Last(); //Get the file's name with extension.
+
+                corpus.Add(new(
+                    _name.Substring(0, _name.LastIndexOf('.')), //Get the file's name without extension.
+                    documentText
+                ));
+            }
         }
 
-        System.Console.WriteLine(directory.Length + " " + fileContent.Count);
+        System.Console.WriteLine(directory.Length + " " + corpus.Count);
 
-        return (fileContent, directory);
+        return corpus.ToArray();
     }
 
     /*

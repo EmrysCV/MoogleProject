@@ -31,6 +31,6 @@
     private SearchResult result = new SearchResult();
 
     private void RunQuery() {
-        result = Moogle.Query(query, Program.Model, Program.content, Program.synonymsDictionary);
+        result = Moogle.Query(query, Program.Model, Program.Corpus, Program.SynonymsDictionary);
     }
 }

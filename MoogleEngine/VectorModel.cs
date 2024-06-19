@@ -16,64 +16,62 @@ namespace MoogleEngine;
 
 public class VectorModel
 {
-    public Dictionary<string, int> wordsIndex { get; private set; }
-    public List<int[]> tf { get; private set; }
-    public double[,] tfIdf { get; private set; }
-    public List<List<int>[]> wordPositionInText { get; private set; }
-    public Token[][] textWordByWord { get; private set; }
+    public Dictionary<string, int> WordsIndex { get; private set; }
+    public List<int[]> TF { get; private set; }
+    public double[,] TFIDF { get; private set; }
+    public List<List<int>[]> WordPositionInText { get; private set; }
+    public Token[][] TextWordByWord { get; private set; }
     public int DOCUMENTS_AMOUNT { get; private set; }
-    public List<string> documents {get; private set;}
 
-    public VectorModel(List<string> documents)
+    public VectorModel(Document[] Corpus)
     {
-        this.DOCUMENTS_AMOUNT = documents.Count;
-        this.wordsIndex = new Dictionary<string, int>();
-        this.wordPositionInText = new List<List<int>[]>();
-        this.textWordByWord = new Token[this.DOCUMENTS_AMOUNT][];
-        this.tf = new List<int[]>();
-        this.documents = documents;
-        CalcTF(documents);
-        this.tfIdf = new double[this.tf.Count, this.DOCUMENTS_AMOUNT];
+        this.DOCUMENTS_AMOUNT = Corpus.Length;
+        this.WordsIndex = new Dictionary<string, int>();
+        this.WordPositionInText = new List<List<int>[]>();
+        this.TextWordByWord = new Token[this.DOCUMENTS_AMOUNT][];
+        this.TF = new List<int[]>();
+        CalcTF(Corpus);
+        this.TFIDF = new double[this.TF.Count, this.DOCUMENTS_AMOUNT];
         CalcTFIDF();
     }
 
     void AddWord(string word, int wordIndex, int documentIndex, int wordPosition)
     {
-        this.wordsIndex.Add(word, wordIndex);
-        this.tf.Add(new int[this.DOCUMENTS_AMOUNT]);
-        this.tf[wordIndex][documentIndex] = 1;
-        this.wordPositionInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
+        this.WordsIndex.Add(word, wordIndex);
+        this.TF.Add(new int[this.DOCUMENTS_AMOUNT]);
+        this.TF[wordIndex][documentIndex] = 1;
+        this.WordPositionInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
-            this.wordPositionInText[wordIndex][i] = new List<int>();
+            this.WordPositionInText[wordIndex][i] = new List<int>();
         }
 
-        this.wordPositionInText[wordIndex][documentIndex].Add(wordPosition);
+        this.WordPositionInText[wordIndex][documentIndex].Add(wordPosition);
     }
 
-    public void CalcTF(List<string> documents)
+    public void CalcTF(Document[] corpus)
     {
         int wordIndex = 0;
         int documentIndex = 0;
         int wordPosition = 1;
 
-        foreach (string document in documents)
+        foreach (Document document in corpus)
         {
-            Token[] normalizedDocument = Tools.Parse(document);
-            textWordByWord[documentIndex] = normalizedDocument;
+            Token[] normalizedDocument = Tools.Parse(document.Text);
+            TextWordByWord[documentIndex] = normalizedDocument;
 
             foreach (var word in normalizedDocument)
             {
-                if (!this.wordsIndex.ContainsKey(word.Lexem))
+                if (!this.WordsIndex.ContainsKey(word.Lexem))
                 {
                     AddWord(word.Lexem, wordIndex, documentIndex, wordPosition);
                     wordIndex++;
                 }
                 else
                 {
-                    this.tf[this.wordsIndex[word.Lexem]][documentIndex]++; //Aumentar la frecuencia de la palabra
-                    this.wordPositionInText[this.wordsIndex[word.Lexem]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
+                    this.TF[this.WordsIndex[word.Lexem]][documentIndex]++; //Aumentar la frecuencia de la palabra
+                    this.WordPositionInText[this.WordsIndex[word.Lexem]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
                 }
                 wordPosition++;
             }
@@ -101,12 +99,12 @@ public class VectorModel
     {
         double _wordIdf;
 
-        for (int i = 0; i < this.tf.Count; i++)
+        for (int i = 0; i < this.TF.Count; i++)
         {
-            _wordIdf = CalcIDF(this.tf[i]);
+            _wordIdf = CalcIDF(this.TF[i]);
             for (int j = 0; j < this.DOCUMENTS_AMOUNT; j++)
             {
-                this.tfIdf[i, j] = (this.tf[i][j] * _wordIdf);
+                this.TFIDF[i, j] = (this.TF[i][j] * _wordIdf);
             }
         }
     }
