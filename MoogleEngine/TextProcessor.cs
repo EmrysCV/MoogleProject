@@ -58,20 +58,21 @@ public class TextProcessor
 
         foreach (string document in documents)
         {
-            List<string> normalizedDocument = Tools.Normalize(document);
-            textWordByWord[documentIndex] = normalizedDocument;
+            Token[] normalizedDocument = Tools.Parse(document);
+            
+            //textWordByWord[documentIndex] = normalizedDocument;
 
-            foreach (string word in normalizedDocument)
+            foreach (var word in normalizedDocument)
             {
-                if (!this.wordsIndex.ContainsKey(word))
+                if (!this.wordsIndex.ContainsKey(word.Lexem))
                 {
-                    AddWord(word, wordIndex, documentIndex, wordPosition);
+                    AddWord(word.Lexem, wordIndex, documentIndex, wordPosition);
                     wordIndex++;
                 }
                 else
                 {
-                    this.tf[this.wordsIndex[word]][documentIndex]++; //Aumentar la frecuencia de la palabra
-                    this.wordPositionInText[this.wordsIndex[word]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
+                    this.tf[this.wordsIndex[word.Lexem]][documentIndex]++; //Aumentar la frecuencia de la palabra
+                    this.wordPositionInText[this.wordsIndex[word.Lexem]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
                 }
                 wordPosition++;
             }

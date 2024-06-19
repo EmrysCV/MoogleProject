@@ -93,6 +93,41 @@ public static class Tools
         return listWords;
     }
 
+    public static Token[] Parse(string text)
+    {
+        List<Token> tokens = new List<Token>();
+        string _word = "";
+        int startingPosition = 0;
+
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (char.IsLetterOrDigit(text[i]))
+            {
+                _word += char.ToLower(text[i]);
+            }
+            else
+            {
+                if (_word != "")
+                {
+                    Token _token = new(_word, startingPosition);
+                    tokens.Add(_token);
+
+                    _word = "";
+                }
+
+                startingPosition = i + 1;
+            }
+        }
+
+
+        if (_word != "")
+        {
+            Token _token = new(_word, startingPosition);
+            tokens.Add(_token);
+        }
+        return tokens.ToArray();
+    }
+
     /*
         Recive como parametros la palabra de cual vamos a obtener la que mas se parce en nuestro diccionario y el diccionario 
     donde esta guardado todo nuestro universo de palabras
