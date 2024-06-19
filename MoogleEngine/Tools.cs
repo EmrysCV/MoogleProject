@@ -247,11 +247,14 @@ public static class Tools
             }
         }
 
+        int maxScoreEndI = 0;
+
         for (int i = maxScoreI; i < maxScoreI + 100 && i < document.Length; i++)
         {
-            snippet += document[i].Lexem + " ";
+            maxScoreEndI = i;
         }
-        return snippet;
+
+        return Data.documents[documentIndex].Substring(document[maxScoreI].Position, document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position);
     }
 
     /*

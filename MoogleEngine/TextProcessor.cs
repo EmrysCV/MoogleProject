@@ -22,6 +22,7 @@ public class TextProcessor
     public List<List<int>[]> wordPositionInText { get; private set; }
     public Token[][] textWordByWord { get; private set; }
     public int DOCUMENTS_AMOUNT { get; private set; }
+    public List<string> documents {get; private set;}
 
     public TextProcessor(List<string> documents)
     {
@@ -30,6 +31,7 @@ public class TextProcessor
         this.wordPositionInText = new List<List<int>[]>();
         this.textWordByWord = new Token[this.DOCUMENTS_AMOUNT][];
         this.tf = new List<int[]>();
+        this.documents = documents;
         CalcTF(documents);
         this.tfIdf = new double[this.tf.Count, this.DOCUMENTS_AMOUNT];
         CalcTFIDF();
