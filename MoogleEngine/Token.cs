@@ -1,11 +1,11 @@
 namespace MoogleEngine;
 
 public class Token{
-    public string Lexem {get; private set;}
+    public string Lexeme {get; private set;}
     public int Position {get; private set;}
 
-    public Token(string lex, int position){
-        this.Lexem = lex;
+    public Token(string lexeme, int position){
+        this.Lexeme = lexeme;
         this.Position = position;
     }
 }

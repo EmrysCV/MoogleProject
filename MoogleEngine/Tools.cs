@@ -214,13 +214,11 @@ public static class Tools
         double maxScore = 0d;
         double _score = 0d;
 
-        Token[] document = Model.TextWordByWord[documentIndex];
-
-        for (int i = 0; i < 100 && i < document.Length; i++)
+        for (int i = 0; i < 100 && i < corpus[documentIndex].Tokens.Length; i++)
         {
             for (int j = 0; j < normalizedQuery.Count; j++)
             {
-                if (document[i].Lexem == normalizedQuery[j])
+                if (corpus[documentIndex].Tokens[i].Lexeme == normalizedQuery[j])
                 {
                     _score += Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                     break;
@@ -230,15 +228,15 @@ public static class Tools
 
         maxScore = _score;
 
-        for (int i = 100; i < document.Length; i++)
+        for (int i = 100; i < corpus[documentIndex].Tokens.Length; i++)
         {
             for (int j = 0; j < normalizedQuery.Count; j++)
             {
-                if (document[i].Lexem == normalizedQuery[j])
+                if (corpus[documentIndex].Tokens[i].Lexeme == normalizedQuery[j])
                 {
                     _score += Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                 }
-                if (document[i - 100].Lexem == normalizedQuery[j])
+                if (corpus[documentIndex].Tokens[i - 100].Lexeme == normalizedQuery[j])
                 {
                     _score -= Model.TFIDF[Model.WordsIndex[normalizedQuery[j]], documentIndex];
                 }
@@ -252,14 +250,14 @@ public static class Tools
 
         int maxScoreEndI = 0;
 
-        for (int i = maxScoreI; i < maxScoreI + 100 && i < document.Length; i++)
+        for (int i = maxScoreI; i < maxScoreI + 100 && i < corpus[documentIndex].Tokens.Length; i++)
         {
             maxScoreEndI = i;
         }
 
         string snippet = corpus[documentIndex].Text.Substring(
-                document[maxScoreI].Position,
-                document[maxScoreEndI].Position + document[maxScoreEndI].Lexem.Length - document[maxScoreI].Position
+                corpus[documentIndex].Tokens[maxScoreI].Position,
+                corpus[documentIndex].Tokens[maxScoreEndI].Position + corpus[documentIndex].Tokens[maxScoreEndI].Lexeme.Length - corpus[documentIndex].Tokens[maxScoreI].Position
                 );
 
         return snippet;
@@ -367,7 +365,8 @@ public static class Tools
 
                 corpus.Add(new(
                     _name.Substring(0, _name.LastIndexOf('.')), //Get the file's name without extension.
-                    documentText
+                    documentText,
+                    Parse(documentText)
                 ));
             }
         }

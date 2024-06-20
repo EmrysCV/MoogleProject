@@ -17,10 +17,9 @@ namespace MoogleEngine;
 public class VectorModel
 {
     public Dictionary<string, int> WordsIndex { get; private set; }
-    public List<int[]> TF { get; private set; }
+    public List<double[]> TF { get; private set; }
     public double[,] TFIDF { get; private set; }
     public List<List<int>[]> WordPositionInText { get; private set; }
-    public Token[][] TextWordByWord { get; private set; }
     public int DOCUMENTS_AMOUNT { get; private set; }
 
     public VectorModel(Document[] Corpus)
@@ -28,8 +27,7 @@ public class VectorModel
         this.DOCUMENTS_AMOUNT = Corpus.Length;
         this.WordsIndex = new Dictionary<string, int>();
         this.WordPositionInText = new List<List<int>[]>();
-        this.TextWordByWord = new Token[this.DOCUMENTS_AMOUNT][];
-        this.TF = new List<int[]>();
+        this.TF = new List<double[]>();
         CalcTF(Corpus);
         this.TFIDF = new double[this.TF.Count, this.DOCUMENTS_AMOUNT];
         CalcTFIDF();
@@ -38,7 +36,7 @@ public class VectorModel
     void AddWord(string word, int wordIndex, int documentIndex, int wordPosition)
     {
         this.WordsIndex.Add(word, wordIndex);
-        this.TF.Add(new int[this.DOCUMENTS_AMOUNT]);
+        this.TF.Add(new double[this.DOCUMENTS_AMOUNT]);
         this.TF[wordIndex][documentIndex] = 1;
         this.WordPositionInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
 
@@ -58,29 +56,32 @@ public class VectorModel
 
         foreach (Document document in corpus)
         {
-            Token[] normalizedDocument = Tools.Parse(document.Text);
-            TextWordByWord[documentIndex] = normalizedDocument;
-
-            foreach (var word in normalizedDocument)
+            foreach (var word in document.Tokens)
             {
-                if (!this.WordsIndex.ContainsKey(word.Lexem))
+                if (!this.WordsIndex.ContainsKey(word.Lexeme))
                 {
-                    AddWord(word.Lexem, wordIndex, documentIndex, wordPosition);
+                    AddWord(word.Lexeme, wordIndex, documentIndex, wordPosition);
                     wordIndex++;
                 }
                 else
                 {
-                    this.TF[this.WordsIndex[word.Lexem]][documentIndex]++; //Aumentar la frecuencia de la palabra
-                    this.WordPositionInText[this.WordsIndex[word.Lexem]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
+                    this.TF[this.WordsIndex[word.Lexeme]][documentIndex]++; //Aumentar la frecuencia de la palabra
+                    this.WordPositionInText[this.WordsIndex[word.Lexeme]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
                 }
                 wordPosition++;
             }
+
+            double max = double.MinValue;
+
+            for (int i = 0; i < wordIndex; i++) if (this.TF[i][documentIndex] > max) max = this.TF[i][documentIndex];
+            for (int i = 0; i < wordIndex; i++) this.TF[i][documentIndex] /= max;
+
             documentIndex++;
             wordPosition = 1;
         }
     }
 
-    double CalcIDF(int[] wordTf)
+    double CalcIDF(double[] wordTf)
     {
         double wordIdf;
         int df = 0;
@@ -89,7 +90,8 @@ public class VectorModel
         {
             if (wordTf[i] != 0) df++;
         }
-        double logArgument = (double)this.DOCUMENTS_AMOUNT / df;
+        
+        double logArgument = (double)this.DOCUMENTS_AMOUNT / (1 + df);
         wordIdf = Math.Log10(logArgument);
 
         return wordIdf;
