@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MoogleEngine;
+using MoogleEngine.Tools;
 using System.Diagnostics;
 using System.Security.Principal;
 
@@ -15,12 +16,12 @@ public class Program
         Stopwatch crono = new Stopwatch();
         crono.Start();
 
-        Corpus = Tools.LoadDocuments();
-        SynonymsDictionary = Tools.LoadAndCreateSynonymsDictionary();
+        Corpus = Preprocessing.LoadDocuments();
+        SynonymsDictionary = Preprocessing.LoadAndCreateSynonymsDictionary();
         Model = new VectorModel(Corpus);
 
         crono.Stop();
-        System.Console.WriteLine((double)crono.ElapsedMilliseconds / 1000);
+        Console.WriteLine((double)crono.ElapsedMilliseconds / 1000);
 
         var builder = WebApplication.CreateBuilder(args);
 

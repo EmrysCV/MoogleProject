@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MoogleEngine.Tools;
 
 namespace MoogleEngine;
 
@@ -26,9 +27,7 @@ public static class Moogle
 
         if (resultSize == 0)
         {
-            items = new SearchItem[1] {
-                new SearchItem("No hay coincidencias", "", 0f)
-            };
+            items = [new SearchItem("No hay coincidencias", "", 0f)];
         }
         else
         {
@@ -37,7 +36,7 @@ public static class Moogle
             {
                 int _documentIndex = result.result[i].Item2;
 
-                items[i] = new SearchItem(corpus[_documentIndex].Name, Tools.FindSnippet(_documentIndex, model, corpus, result.normalizedQuery), (float) result.result[i].Item1);
+                items[i] = new SearchItem(corpus[_documentIndex].Name, QueryTools.FindSnippet(_documentIndex, model, corpus, result.normalizedQuery), (float)result.result[i].Item1);
             }
         }
 

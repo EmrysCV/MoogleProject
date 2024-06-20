@@ -12,6 +12,8 @@
                       palabras wordIndex y este le asocia a la palbra su fila de la matriz
 
 */
+using System.Diagnostics;
+
 namespace MoogleEngine;
 
 public class VectorModel
@@ -19,16 +21,18 @@ public class VectorModel
     public Dictionary<string, int> WordsIndex { get; private set; }
     public List<double[]> TF { get; private set; }
     public double[,] TFIDF { get; private set; }
-    public List<List<int>[]> WordPositionInText { get; private set; }
+    public List<List<int>[]> WordPositionsInText { get; private set; }
     public int DOCUMENTS_AMOUNT { get; private set; }
 
     public VectorModel(Document[] Corpus)
     {
         this.DOCUMENTS_AMOUNT = Corpus.Length;
         this.WordsIndex = new Dictionary<string, int>();
-        this.WordPositionInText = new List<List<int>[]>();
+        this.WordPositionsInText = new List<List<int>[]>();
+
         this.TF = new List<double[]>();
         CalcTF(Corpus);
+
         this.TFIDF = new double[this.TF.Count, this.DOCUMENTS_AMOUNT];
         CalcTFIDF();
     }
@@ -38,14 +42,11 @@ public class VectorModel
         this.WordsIndex.Add(word, wordIndex);
         this.TF.Add(new double[this.DOCUMENTS_AMOUNT]);
         this.TF[wordIndex][documentIndex] = 1;
-        this.WordPositionInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
+        this.WordPositionsInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
 
-        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
-        {
-            this.WordPositionInText[wordIndex][i] = new List<int>();
-        }
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++) this.WordPositionsInText[wordIndex][i] = new List<int>();
 
-        this.WordPositionInText[wordIndex][documentIndex].Add(wordPosition);
+        this.WordPositionsInText[wordIndex][documentIndex].Add(wordPosition);
     }
 
     public void CalcTF(Document[] corpus)
@@ -66,7 +67,7 @@ public class VectorModel
                 else
                 {
                     this.TF[this.WordsIndex[word.Lexeme]][documentIndex]++; //Aumentar la frecuencia de la palabra
-                    this.WordPositionInText[this.WordsIndex[word.Lexeme]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
+                    this.WordPositionsInText[this.WordsIndex[word.Lexeme]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
                 }
                 wordPosition++;
             }
@@ -83,16 +84,9 @@ public class VectorModel
 
     double CalcIDF(double[] wordTf)
     {
-        double wordIdf;
-        int df = 0;
-
-        for (int i = 0; i < wordTf.Length; i++)
-        {
-            if (wordTf[i] != 0) df++;
-        }
-        
+        int df = Array.FindAll(wordTf, (word) => word != 0).Length;
         double logArgument = (double)this.DOCUMENTS_AMOUNT / (1 + df);
-        wordIdf = Math.Log10(logArgument);
+        double wordIdf = Math.Log10(logArgument);
 
         return wordIdf;
     }
@@ -106,7 +100,7 @@ public class VectorModel
             _wordIdf = CalcIDF(this.TF[i]);
             for (int j = 0; j < this.DOCUMENTS_AMOUNT; j++)
             {
-                this.TFIDF[i, j] = (this.TF[i][j] * _wordIdf);
+                this.TFIDF[i, j] = this.TF[i][j] * _wordIdf;
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace MoogleEngine;
+﻿using MoogleEngine.Tools;
+
+namespace MoogleEngine;
 
 class Search
 {
@@ -10,9 +12,9 @@ class Search
 
     public Search(string query, VectorModel Model, Dictionary<string, HashSet<string>> synonymsDictionary)
     {
-        this.normalizedQuery = Tools.Normalize(query, true);
-        string[] operators = Tools.FindOperators(this.normalizedQuery);
-        this.normalizedQuery = Tools.Normalize(query);
+        this.normalizedQuery = Preprocessing.Normalize(query, true);
+        string[] operators = QueryTools.FindOperators(this.normalizedQuery);
+        this.normalizedQuery = Preprocessing.Normalize(query);
 
         string closestWord;
 
@@ -36,13 +38,14 @@ class Search
             }
             else
             {
-                closestWord = Tools.ClosestWord(this.normalizedQuery[i], Model.WordsIndex);
+                closestWord = QueryTools.ClosestWord(this.normalizedQuery[i], Model.WordsIndex);
                 suggestion += closestWord + " ";
             }
             if (synonymsDictionary.ContainsKey(this.normalizedQuery[i]))
             {
                 foreach (string synonym in synonymsDictionary[this.normalizedQuery[i]])
                 {
+                    Console.WriteLine(synonym);
                     if (Model.WordsIndex.ContainsKey(synonym))
                     {
                         ProcessQueryWord(Model, operators, synonym, i, true);
@@ -52,9 +55,9 @@ class Search
         }
 
         ApplyOperators(Model, operators);
-        //Array.Sort(this.result);
-        SortResult();
-        ResizeResult();
+
+        this.result = Array.FindAll(this.result, (item) => item.Item1 != 0); 
+        Array.Sort(this.result, (item1, item2) => item2.Item1.CompareTo(item1.Item1));
 
         for (int i = 0; i < this.result.Length; i++)
         {
@@ -83,7 +86,6 @@ class Search
     void ApplyOperators(VectorModel Model, string[] operators)
     {
         List<int[]> distancesList = new List<int[]>();
-        double maxScore = (double)int.MinValue;
         int _wordIndex;
 
         for (int i = 0; i < this.queryWordsAmount; i++)
@@ -103,67 +105,24 @@ class Search
                 }
                 if (operators.Length > i + 1 && operators[i].Contains("~") && operators[i + 1].Contains("~") && Model.WordsIndex.ContainsKey(this.normalizedQuery[i + 1]))
                 {
-                    distancesList.Add(Tools.MinDistance(Model.WordsIndex[this.normalizedQuery[i]], Model.WordsIndex[this.normalizedQuery[i + 1]], Model.WordPositionInText, DOCUMENTS_AMOUNT));
+                    distancesList.Add(QueryTools.MinDistance(Model.WordsIndex[this.normalizedQuery[i]], Model.WordsIndex[this.normalizedQuery[i + 1]], Model.WordPositionsInText, DOCUMENTS_AMOUNT));
                 }
             }
         }
 
-        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
-        {
-            if (this.result[i].Item1 > maxScore)
-            {
-                maxScore = this.result[i].Item1;
-            }
-        }
+        double _maxScore = int.MinValue;
 
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++) if (this.result[i].Item1 > _maxScore) _maxScore = this.result[i].Item1;
+         
         for (int i = 0; i < distancesList.Count; i++)
         {
             for (int j = 0; j < DOCUMENTS_AMOUNT; j++)
             {
                 if (this.result[j].Item1 != 0)
                 {
-                    this.result[j].Item1 += maxScore / (double)distancesList[i][j];
+                    this.result[j].Item1 += _maxScore / (double)distancesList[i][j];
                 }
             }
         }
-    }
-
-    void SortResult()
-    {
-        for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
-        {
-            for (int j = i + 1; j < DOCUMENTS_AMOUNT; j++)
-            {
-                if (this.result[i].Item1 < this.result[j].Item1)
-                {
-                    (double, int) _aux = this.result[i];
-                    this.result[i] = this.result[j];
-                    this.result[j] = _aux;
-                }
-            }
-        }
-    }
-
-    void ResizeResult()
-    {
-        int newSize = 0;
-
-        for (int i = 0; i < this.result.Length; i++)
-        {
-            if (this.result[i].Item1 == 0)
-            {
-                newSize = i;
-                break;
-            }
-        }
-
-        (double, int)[] _auxResult = new (double, int)[newSize];
-
-        for (int i = 0; i < newSize; i++)
-        {
-            _auxResult[i] = this.result[i];
-        }
-
-        this.result = _auxResult;
     }
 }
