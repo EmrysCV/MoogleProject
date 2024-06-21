@@ -27,10 +27,10 @@ public class VectorModel
     public VectorModel(Document[] Corpus)
     {
         this.DOCUMENTS_AMOUNT = Corpus.Length;
-        this.WordsIndex = new Dictionary<string, int>();
-        this.WordPositionsInText = new List<List<int>[]>();
+        this.WordsIndex = [];
+        this.WordPositionsInText = [];
 
-        this.TF = new List<double[]>();
+        this.TF = [];
         CalcTF(Corpus);
 
         this.TFIDF = new double[this.TF.Count, this.DOCUMENTS_AMOUNT];
@@ -44,7 +44,7 @@ public class VectorModel
         this.TF[wordIndex][documentIndex] = 1;
         this.WordPositionsInText.Add(new List<int>[this.DOCUMENTS_AMOUNT]);
 
-        for (int i = 0; i < DOCUMENTS_AMOUNT; i++) this.WordPositionsInText[wordIndex][i] = new List<int>();
+        for (int i = 0; i < DOCUMENTS_AMOUNT; i++) this.WordPositionsInText[wordIndex][i] = [];
 
         this.WordPositionsInText[wordIndex][documentIndex].Add(wordPosition);
     }
@@ -59,15 +59,15 @@ public class VectorModel
         {
             foreach (var word in document.Tokens)
             {
-                if (!this.WordsIndex.ContainsKey(word.Lexeme))
+                if (WordsIndex.TryGetValue(word.Lexeme, out int value))
                 {
-                    AddWord(word.Lexeme, wordIndex, documentIndex, wordPosition);
-                    wordIndex++;
+                    this.TF[value][documentIndex]++; //Aumentar la frecuencia de la palabra
+                    this.WordPositionsInText[value][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos    
                 }
                 else
                 {
-                    this.TF[this.WordsIndex[word.Lexeme]][documentIndex]++; //Aumentar la frecuencia de la palabra
-                    this.WordPositionsInText[this.WordsIndex[word.Lexeme]][documentIndex].Add(wordPosition); //Llenar la tabla con las posiciones de las palabras en los textos
+                    AddWord(word.Lexeme, wordIndex, documentIndex, wordPosition);
+                    wordIndex++;
                 }
                 wordPosition++;
             }

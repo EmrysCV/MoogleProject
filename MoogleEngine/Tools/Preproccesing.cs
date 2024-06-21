@@ -7,14 +7,22 @@ public static class Preprocessing
     /*
         Devuelve una lista con los contenidos de los documentos y un array con las direcciones relativas de cada documento
     */
+    public static HashSet<string> LoadStopWords()
+    {
+        string json = File.ReadAllText(Path.Join("..", "stopwords.json"));
+        StopWords deserializedJson = JsonSerializer.Deserialize<StopWords>(json);
+
+        return [.. deserializedJson.Words];
+    }
+    
     public static Document[] LoadDocuments()
     {
         string[] directory = Directory.GetFiles(Path.Join("..", "Content"));
-        List<Document> corpus = new();
+        List<Document> corpus = [];
 
         foreach (string document in directory)
         {
-            char[] splitters = { '/', '\\' };
+            char[] splitters = ['/', '\\'];
             string documentText = File.ReadAllText(document);
 
             if (documentText != null)
@@ -22,7 +30,7 @@ public static class Preprocessing
                 string _name = document.Split(splitters).Last(); //Get the file's name with extension.
 
                 corpus.Add(new(
-                    _name.Substring(0, _name.LastIndexOf('.')), //Get the file's name without extension.
+                    _name[.._name.LastIndexOf('.')], //Get the file's name without extension.
                     documentText,
                     Parse(documentText)
                 ));
@@ -31,7 +39,7 @@ public static class Preprocessing
 
         System.Console.WriteLine(directory.Length + " " + corpus.Count);
 
-        return corpus.ToArray();
+        return [.. corpus];
     }
 
     /*
@@ -41,21 +49,21 @@ public static class Preprocessing
     {
         Dictionary<string, HashSet<string>> synonymsDictionary = new Dictionary<string, HashSet<string>>();
         string json = File.ReadAllText(Path.Join("..", "sinonimos.json"));
-        _Sinonyms deserializedJson = JsonSerializer.Deserialize<_Sinonyms>(json);
+        Sinonyms deserializedJson = JsonSerializer.Deserialize<Sinonyms>(json);
 
-        for (int i = 0; i < deserializedJson.words.Length; i++)
+        for (int i = 0; i < deserializedJson.Words.Length; i++)
         {
-            for (int j = 0; j < deserializedJson.words[i].Length; j++)
+            for (int j = 0; j < deserializedJson.Words[i].Length; j++)
             {
-                if (!synonymsDictionary.ContainsKey(deserializedJson.words[i][j]))
+                if (!synonymsDictionary.ContainsKey(deserializedJson.Words[i][j]))
                 {
-                    synonymsDictionary.Add(deserializedJson.words[i][j], new HashSet<string>());
+                    synonymsDictionary.Add(deserializedJson.Words[i][j], []);
                 }
-                for (int k = 0; k < deserializedJson.words[i].Length; k++)
+                for (int k = 0; k < deserializedJson.Words[i].Length; k++)
                 {
                     if (k != j)
                     {
-                        synonymsDictionary[deserializedJson.words[i][j]].Add(Normalize(deserializedJson.words[i][k])[0]);
+                        synonymsDictionary[deserializedJson.Words[i][j]].Add(Parse(deserializedJson.Words[i][k])[0].Lexeme);
                     }
                 }
             }
@@ -64,51 +72,9 @@ public static class Preprocessing
         return synonymsDictionary;
     }
 
-    /*
-        Recive como parametros el texto que se va a normalizar(eliminar todos los caracteres que no sean digitos, letras o espacios,
-      ademas de llevar todo a minusculas) y una variable indicando si el texto es una query o no(por defecto en falso)
-        Devuelve una lista donde en cada posicion continene una de las palabras, del texto recivido como parametro, ya normalizada
-    */
-
-    //TODO ver que hago con esto
-    public static List<string> Normalize(string text, bool isQuery = false)
+    public static Token[] Parse(string text, bool isQuery = false)
     {
-        char[] spliters = { ' ', '\n', '\t', ',', '.', ':', ';' };
-        string[] words = text.Split(spliters);
-        string newWord;
-        List<string> listWords = new List<string>();
-
-        foreach (string word in words)
-        {
-            newWord = "";
-            foreach (char c in word)
-            {
-                char _ac = char.ToLower(c);
-
-                if (char.IsLetterOrDigit(_ac))
-                {
-                    newWord += _ac.ToString();
-                    continue;
-                }
-
-                if (isQuery)
-                {
-                    if (_ac == '!') { newWord += _ac.ToString(); continue; }
-                    if (_ac == '^') { newWord += _ac.ToString(); continue; }
-                    if (_ac == '~') { newWord += _ac.ToString(); continue; }
-                    if (_ac == '*') { newWord += _ac.ToString(); continue; }
-                }
-            }
-
-            if (newWord != "") listWords.Add(newWord);
-        }
-
-        return listWords;
-    }
-
-    public static Token[] Parse(string text)
-    {
-        List<Token> tokens = new List<Token>();
+        List<Token> tokens = [];
         string _word = "";
         int startingPosition = 0;
 

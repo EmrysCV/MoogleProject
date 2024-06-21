@@ -7,14 +7,14 @@ public class SearchResult
     public SearchResult(SearchItem[] items, string suggestion="")
     {
         if (items == null) {
-            throw new ArgumentNullException("items");
+            throw new ArgumentNullException(nameof(items));
         }
 
         this.items = items;
         this.Suggestion = suggestion;
     }
 
-    public SearchResult() : this(new SearchItem[0]) {
+    public SearchResult() : this([]) {
 
     }
 

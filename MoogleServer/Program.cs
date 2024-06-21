@@ -10,11 +10,15 @@ public class Program
     public static VectorModel Model { get; private set; }
     public static Document[] Corpus { get; private set; }
     public static Dictionary<string, HashSet<string>> SynonymsDictionary { get; private set; }
+    public static HashSet<string> StopWords { get; private set; }
 
     public static void Main(string[] args)
     {
         Stopwatch crono = new Stopwatch();
         crono.Start();
+
+        
+
 
         Corpus = Preprocessing.LoadDocuments();
         SynonymsDictionary = Preprocessing.LoadAndCreateSynonymsDictionary();

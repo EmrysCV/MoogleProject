@@ -12,31 +12,29 @@ public static class Moogle
         Stopwatch cronos = new Stopwatch();
         cronos.Start();
 
-        if (memory.ContainsKey(query))
+        if (memory.TryGetValue(query, out SearchResult? value))
         {
             cronos.Stop();
             System.Console.WriteLine((double)cronos.ElapsedMilliseconds / 1000);
             System.Console.WriteLine(model.TF.Count);
-            return memory[query];
+            return value;
         }
 
         Search result = new Search(query, model, synonymsDictionary);
         SearchItem[] items;
 
-        int resultSize = result.result.Length;
-
-        if (resultSize == 0)
+        if (result.Result.Length == 0)
         {
             items = [new SearchItem("No hay coincidencias", "", 0f)];
         }
         else
         {
-            items = new SearchItem[resultSize];
-            for (int i = 0; i < resultSize; i++)
+            items = new SearchItem[result.Result.Length];
+            for (int i = 0; i < result.Result.Length; i++)
             {
-                int _documentIndex = result.result[i].Item2;
+                int _documentIndex = result.Result[i].Item2;
 
-                items[i] = new SearchItem(corpus[_documentIndex].Name, QueryTools.FindSnippet(_documentIndex, model, corpus, result.normalizedQuery), (float)result.result[i].Item1);
+                items[i] = new SearchItem(corpus[_documentIndex].Name, QueryTools.FindSnippet(_documentIndex, model, corpus, result.NormalizedQuery), (float)result.Result[i].Item1);
             }
         }
 
@@ -44,8 +42,8 @@ public static class Moogle
         System.Console.WriteLine((double)cronos.ElapsedMilliseconds / 1000);
         System.Console.WriteLine(model.TF.Count);
 
-        memory.Add(query, new SearchResult(items, result.suggestion));
+        memory.Add(query, new SearchResult(items, result.Suggestion));
 
-        return new SearchResult(items, result.suggestion);
+        return new SearchResult(items, result.Suggestion);
     }
 }

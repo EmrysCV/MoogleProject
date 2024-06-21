@@ -75,7 +75,7 @@ public static class QueryTools
     {
         int[] minDistancePerDocument = new int[DOCUMENTS_AMOUNT];
         int minDistance = int.MaxValue;
-        int j, k, _distance, _wordPosition;
+        int j, k, _wordPosition;
 
         for (int i = 0; i < DOCUMENTS_AMOUNT; i++)
         {
@@ -85,11 +85,7 @@ public static class QueryTools
                 _wordPosition = wordPositionsInText[word2][i][k];
                 while (j < wordPositionsInText[word1][i].Count && wordPositionsInText[word1][i][j] < _wordPosition)
                 {
-                    _distance = _wordPosition - wordPositionsInText[word1][i][j];
-                    if (_distance < minDistance)
-                    {
-                        minDistance = _distance;
-                    }
+                    minDistance = Math.Min(_wordPosition - wordPositionsInText[word1][i][j], minDistance);
                     j++;
                 }
 
@@ -104,11 +100,7 @@ public static class QueryTools
 
                 while (k < wordPositionsInText[word2][i].Count && wordPositionsInText[word2][i][k] < _wordPosition)
                 {
-                    _distance = _wordPosition - wordPositionsInText[word2][i][k];
-                    if (_distance < minDistance)
-                    {
-                        minDistance = _distance;
-                    }
+                    minDistance = Math.Min(_wordPosition - wordPositionsInText[word2][i][k], minDistance);
                     k++;
                 }
             }
@@ -130,7 +122,9 @@ public static class QueryTools
         int maxScoreI = 0;
         double _score = 0d;
 
-        for (int i = 0; i < 100 && i < corpus[documentIndex].Tokens.Length; i++)
+        if (corpus[documentIndex].Tokens.Length < 100) return corpus[documentIndex].Text;
+
+        for (int i = 0; i < 100; i++)
         {
             for (int j = 0; j < normalizedQuery.Count; j++)
             {
@@ -164,16 +158,9 @@ public static class QueryTools
             }
         }
 
-        int maxScoreEndI = 0;
-
-        for (int i = maxScoreI; i < maxScoreI + 100 && i < corpus[documentIndex].Tokens.Length; i++)
-        {
-            maxScoreEndI = i;
-        }
-
         string snippet = corpus[documentIndex].Text.Substring(
                 corpus[documentIndex].Tokens[maxScoreI].Position,
-                corpus[documentIndex].Tokens[maxScoreEndI].Position + corpus[documentIndex].Tokens[maxScoreEndI].Lexeme.Length - corpus[documentIndex].Tokens[maxScoreI].Position
+                corpus[documentIndex].Tokens[maxScoreI + 100].Position + corpus[documentIndex].Tokens[maxScoreI + 100].Lexeme.Length - corpus[documentIndex].Tokens[maxScoreI].Position
                 );
 
         return snippet;
@@ -194,10 +181,7 @@ public static class QueryTools
         for (int i = 0; i < normalizedQuery.Count; i++)
         {
             operators[i] = "";
-        }
 
-        for (int i = 0; i < normalizedQuery.Count; i++)
-        {
             for (int j = 0; j < normalizedQuery[i].Length; j++)
             {
                 switch (normalizedQuery[i][j])
@@ -244,20 +228,44 @@ public static class QueryTools
             flag = false;
         }
 
-        string[] _operators = new string[_k];
+        for (int i = 0; i < normalizedQuery.Count; i++) System.Console.WriteLine(i + " " + operators[i]);
 
-        for (int i = 0; i < normalizedQuery.Count; i++)
-        {
-            System.Console.WriteLine(i + " " + operators[i]);
-        }
-
-        for (int i = 0; i < _k; i++)
-        {
-            _operators[i] = operators[i];
-        }
-
-        return _operators;
+        return operators[.._k];
 
         //!**el **perro ! e^s e~l ^!papa ~ !de lo!s ^**cachorros
+    }
+    public static List<string> Normalize(string text, bool isQuery = false)
+    {
+        char[] spliters = [' ', '\n', '\t', ',', '.', ':', ';'];
+        string[] words = text.Split(spliters);
+        string newWord;
+        List<string> listWords = [];
+
+        foreach (string word in words)
+        {
+            newWord = "";
+            foreach (char c in word)
+            {
+                char _ac = char.ToLower(c);
+
+                if (char.IsLetterOrDigit(_ac))
+                {
+                    newWord += _ac.ToString();
+                    continue;
+                }
+
+                if (isQuery)
+                {
+                    if (_ac == '!') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '^') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '~') { newWord += _ac.ToString(); continue; }
+                    if (_ac == '*') { newWord += _ac.ToString(); continue; }
+                }
+            }
+
+            if (newWord != "") listWords.Add(newWord);
+        }
+
+        return listWords;
     }
 }
