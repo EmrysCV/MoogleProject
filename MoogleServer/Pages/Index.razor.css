@@ -55,7 +55,12 @@ p {
     border: none;
     float: left;
     height: 40px;
-    margin-left: 20px;
+    width: 400px;
+    border-radius: 100px;
+    padding-left: 20px;
+}
+.SearchBox:focus{
+    outline: none;
 }
 .btn {
     height: 40px;
