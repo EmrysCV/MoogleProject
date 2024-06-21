@@ -14,14 +14,12 @@ public class Program
 
     public static void Main(string[] args)
     {
-        Stopwatch crono = new Stopwatch();
+        Stopwatch crono = new();
         crono.Start();
 
-        
-
-
-        Corpus = Preprocessing.LoadDocuments();
-        SynonymsDictionary = Preprocessing.LoadAndCreateSynonymsDictionary();
+        StopWords = Preprocessing.LoadStopWords();
+        Corpus = Preprocessing.LoadDocuments(StopWords);
+        SynonymsDictionary = Preprocessing.LoadAndCreateSynonymsDictionary(StopWords);
         Model = new VectorModel(Corpus);
 
         crono.Stop();

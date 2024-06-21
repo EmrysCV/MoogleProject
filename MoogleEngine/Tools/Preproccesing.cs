@@ -14,8 +14,8 @@ public static class Preprocessing
 
         return [.. deserializedJson.Words];
     }
-    
-    public static Document[] LoadDocuments()
+
+    public static Document[] LoadDocuments(HashSet<string> StopWords)
     {
         string[] directory = Directory.GetFiles(Path.Join("..", "Content"));
         List<Document> corpus = [];
@@ -32,7 +32,7 @@ public static class Preprocessing
                 corpus.Add(new(
                     _name[.._name.LastIndexOf('.')], //Get the file's name without extension.
                     documentText,
-                    Parse(documentText)
+                    Parse(documentText, StopWords)
                 ));
             }
         }
@@ -45,7 +45,7 @@ public static class Preprocessing
     /*
         Devuelve un diccionario que relaciona cada palabra con el conjunto de todos sus posibles sinonimos
     */
-    public static Dictionary<string, HashSet<string>> LoadAndCreateSynonymsDictionary()
+    public static Dictionary<string, HashSet<string>> LoadAndCreateSynonymsDictionary(HashSet<string> StopWords)
     {
         Dictionary<string, HashSet<string>> synonymsDictionary = new Dictionary<string, HashSet<string>>();
         string json = File.ReadAllText(Path.Join("..", "sinonimos.json"));
@@ -63,7 +63,8 @@ public static class Preprocessing
                 {
                     if (k != j)
                     {
-                        synonymsDictionary[deserializedJson.Words[i][j]].Add(Parse(deserializedJson.Words[i][k])[0].Lexeme);
+                        Token[] parse = Parse(deserializedJson.Words[i][k], StopWords);
+                        if(parse.Length > 0) synonymsDictionary[deserializedJson.Words[i][j]].Add(parse[0].Lexeme);
                     }
                 }
             }
@@ -72,7 +73,7 @@ public static class Preprocessing
         return synonymsDictionary;
     }
 
-    public static Token[] Parse(string text, bool isQuery = false)
+    public static Token[] Parse(string text, HashSet<string> StopWords)
     {
         List<Token> tokens = [];
         string _word = "";
@@ -88,9 +89,11 @@ public static class Preprocessing
             {
                 if (_word != "")
                 {
-                    Token _token = new(_word, startingPosition);
-                    tokens.Add(_token);
-
+                    if (!StopWords.Contains(_word))
+                    {
+                        Token _token = new(_word, startingPosition);
+                        tokens.Add(_token);
+                    }
                     _word = "";
                 }
 
@@ -104,6 +107,6 @@ public static class Preprocessing
             tokens.Add(_token);
         }
 
-        return tokens.ToArray();
+        return [..tokens];
     }
 }

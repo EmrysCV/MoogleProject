@@ -155,12 +155,13 @@ public static class QueryTools
             {
                 maxScore = _score;
                 maxScoreI = i - 99;
+                Console.WriteLine(maxScoreI);
             }
         }
 
         string snippet = corpus[documentIndex].Text.Substring(
                 corpus[documentIndex].Tokens[maxScoreI].Position,
-                corpus[documentIndex].Tokens[maxScoreI + 100].Position + corpus[documentIndex].Tokens[maxScoreI + 100].Lexeme.Length - corpus[documentIndex].Tokens[maxScoreI].Position
+                corpus[documentIndex].Tokens[maxScoreI + 99].Position + corpus[documentIndex].Tokens[maxScoreI + 99].Lexeme.Length - corpus[documentIndex].Tokens[maxScoreI].Position - 1
                 );
 
         return snippet;
