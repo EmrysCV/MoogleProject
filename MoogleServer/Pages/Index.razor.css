@@ -29,10 +29,36 @@ p {
 .page {
     background-color: #1c1b22;
 }
-.moogleName {
-    color: #bbddf5;
-}
 .score {
     text-align: right;
     color: #fbfbfe;
+}
+.SearchBar {
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.SearchBar img {
+    height: 24px;
+    width: auto;
+    margin-right: 10px;
+}
+.SearchBoxContainer {
+    width: 600px;
+    height: 40px;
+    background-color: white;
+    border-radius: 100px;
+}
+.SearchBox {
+    background-color: white;
+    border: none;
+    float: left;
+    height: 40px;
+    margin-left: 20px;
+}
+.btn {
+    height: 40px;
+    border-radius: 100px;
+    float: right;
 }
